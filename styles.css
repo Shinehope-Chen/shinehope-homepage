@@ -646,7 +646,7 @@ a {
   background:
     linear-gradient(90deg, rgba(5, 22, 23, 0.9) 0%, rgba(5, 22, 23, 0.62) 44%, rgba(5, 22, 23, 0.18) 100%),
     linear-gradient(180deg, rgba(5, 22, 23, 0.12), rgba(5, 22, 23, 0.54)),
-    url("./assets/china-visited-cities.jpg") center / cover no-repeat;
+    url("./assets/hero-shinehope.jpg") center / cover no-repeat;
 }
 
 .travel-hero h1 {
@@ -664,8 +664,7 @@ a {
   font-size: clamp(1.05rem, 2vw, 1.3rem);
 }
 
-.travel-map {
-  margin: 0;
+.interactive-map-shell {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -673,17 +672,63 @@ a {
   box-shadow: var(--shadow);
 }
 
-.travel-map img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.travel-map figcaption {
-  border-top: 1px solid var(--line);
+.map-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--line);
   padding: 14px 18px;
   color: var(--muted);
   font-size: 0.94rem;
+}
+
+.map-toolbar strong {
+  color: var(--teal-dark);
+}
+
+.visited-map {
+  width: 100%;
+  height: clamp(460px, 62vw, 720px);
+  background: #dfe8e4;
+}
+
+.visited-map .leaflet-control-attribution {
+  font-size: 0.72rem;
+}
+
+.visited-city-marker {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.24));
+}
+
+.city-label {
+  border: 0;
+  border-radius: 6px;
+  background: rgba(11, 24, 26, 0.88);
+  color: #fff;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+  font-weight: 800;
+}
+
+.city-label::before {
+  border-top-color: rgba(11, 24, 26, 0.88);
+}
+
+.map-popup {
+  display: grid;
+  gap: 4px;
+  min-width: 180px;
+  color: var(--ink);
+}
+
+.map-popup strong {
+  color: var(--teal-dark);
+  font-size: 1rem;
+}
+
+.map-popup span {
+  color: var(--muted);
 }
 
 .travel-notes {

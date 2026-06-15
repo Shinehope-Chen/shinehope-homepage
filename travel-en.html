@@ -6,6 +6,7 @@
     <title>Travel | Shinehope</title>
     <meta name="description" content="Shinehope's travel footprint page, showing visited cities in China." />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./assets/vendor/leaflet/leaflet.css" />
   </head>
   <body class="travel-page">
     <header class="site-header" aria-label="Page navigation">
@@ -44,10 +45,13 @@
           <p class="eyebrow">Map</p>
           <h2 id="map-title">Places I Have Visited</h2>
         </div>
-        <figure class="travel-map">
-          <img src="./assets/china-visited-cities.jpg" alt="Map of Chinese cities visited by Shinehope" />
-          <figcaption>Travel footprint map across China</figcaption>
-        </figure>
+        <div class="interactive-map-shell">
+          <div class="map-toolbar" aria-label="Map note">
+            <span><strong data-map-count>--</strong> city-level areas marked</span>
+            <span>City names appear when zoomed in</span>
+          </div>
+          <div id="visited-map" class="visited-map" data-lang="en" aria-label="Interactive map of visited cities"></div>
+        </div>
       </section>
 
       <section class="section travel-notes" aria-labelledby="notes-title">
@@ -78,5 +82,8 @@
     </footer>
 
     <script src="./script.js"></script>
+    <script src="./assets/vendor/leaflet/leaflet.js"></script>
+    <script src="./assets/visited-cities.js"></script>
+    <script src="./travel-map.js"></script>
   </body>
 </html>

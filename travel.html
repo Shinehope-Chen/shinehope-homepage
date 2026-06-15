@@ -6,6 +6,7 @@
     <title>旅行 | Shinehope</title>
     <meta name="description" content="Shinehope 的旅行足迹页面，展示去过的中国城市。" />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./assets/vendor/leaflet/leaflet.css" />
   </head>
   <body class="travel-page">
     <header class="site-header" aria-label="页面导航">
@@ -44,10 +45,13 @@
           <p class="eyebrow">Map</p>
           <h2 id="map-title">去过的地方</h2>
         </div>
-        <figure class="travel-map">
-          <img src="./assets/china-visited-cities.jpg" alt="Shinehope 去过的中国城市地图" />
-          <figcaption>中国城市旅行足迹地图</figcaption>
-        </figure>
+        <div class="interactive-map-shell">
+          <div class="map-toolbar" aria-label="地图说明">
+            <span>已标记 <strong data-map-count>--</strong> 个市级行政区</span>
+            <span>放大后显示城市名称</span>
+          </div>
+          <div id="visited-map" class="visited-map" data-lang="zh" aria-label="去过的城市交互地图"></div>
+        </div>
       </section>
 
       <section class="section travel-notes" aria-labelledby="notes-title">
@@ -78,5 +82,8 @@
     </footer>
 
     <script src="./script.js"></script>
+    <script src="./assets/vendor/leaflet/leaflet.js"></script>
+    <script src="./assets/visited-cities.js"></script>
+    <script src="./travel-map.js"></script>
   </body>
 </html>
