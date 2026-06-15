@@ -23,22 +23,22 @@
     zh: {
       city: "城市",
       province: "省级区域",
-      days: "记录天数",
-      period: "时间范围",
-      points: "聚合点数",
       photos: "照片",
-      photoHint: "点击照片可打开大图",
+      photoHint: "上下滚动预览，点击查看大图",
+      close: "关闭",
+      previous: "上一张",
+      next: "下一张",
       tileCredit: "底图",
       dataCredit: "标记为市级聚合结果"
     },
     en: {
       city: "City",
       province: "Province-level region",
-      days: "Recorded days",
-      period: "Period",
-      points: "Aggregated points",
       photos: "Photos",
-      photoHint: "Click a photo to open the larger image",
+      photoHint: "Scroll to preview; click to view larger",
+      close: "Close",
+      previous: "Previous",
+      next: "Next",
       tileCredit: "Tiles",
       dataCredit: "Markers are aggregated to city level"
     }
@@ -86,9 +86,6 @@
       <div class="map-popup">
         <strong>${escapeHtml(item.city)}</strong>
         <span>${text.province}: ${escapeHtml(item.province)}</span>
-        <span>${text.days}: ${item.dayCount}</span>
-        <span>${text.period}: ${item.firstDate} ~ ${item.lastDate}</span>
-        <span>${text.points}: ${item.pointCount}</span>
         ${photoGallery(photos, item.city)}
       </div>
     `);
@@ -116,6 +113,9 @@
 
   map.on("zoomend", updateLabels);
   updateLabels();
+  createLightbox();
+  document.addEventListener("click", handleGalleryClick);
+  document.addEventListener("keydown", handleLightboxKeydown);
 
   function colorFor(index, total) {
     const hue = Math.round((index / Math.max(total, 1)) * 290 + 10);
@@ -128,9 +128,9 @@
     }
 
     const images = photos.map((photo, photoIndex) => `
-      <a href="${escapeHtml(photo.src)}" target="_blank" rel="noopener" aria-label="${escapeHtml(city)} ${text.photos} ${photoIndex + 1}">
+      <button type="button" data-gallery-city="${escapeHtml(city)}" data-gallery-index="${photoIndex}" aria-label="${escapeHtml(city)} ${text.photos} ${photoIndex + 1}">
         <img src="${escapeHtml(photo.src)}" alt="${escapeHtml(photo.alt || city)}" loading="lazy" width="${photo.width || 180}" height="${photo.height || 120}">
-      </a>
+      </button>
     `).join("");
 
     return `
@@ -142,6 +142,121 @@
         <div class="map-photo-strip">${images}</div>
       </div>
     `;
+  }
+
+  function createLightbox() {
+    const lightbox = document.createElement("div");
+    lightbox.className = "photo-lightbox";
+    lightbox.hidden = true;
+    lightbox.setAttribute("role", "dialog");
+    lightbox.setAttribute("aria-modal", "true");
+    lightbox.setAttribute("aria-label", text.photos);
+    lightbox.innerHTML = `
+      <div class="photo-lightbox-backdrop" data-lightbox-close></div>
+      <div class="photo-lightbox-panel">
+        <button type="button" class="photo-lightbox-close" data-lightbox-close aria-label="${text.close}">${text.close}</button>
+        <button type="button" class="photo-lightbox-nav prev" data-lightbox-prev aria-label="${text.previous}">&lt;</button>
+        <img data-lightbox-image alt="">
+        <button type="button" class="photo-lightbox-nav next" data-lightbox-next aria-label="${text.next}">&gt;</button>
+        <div class="photo-lightbox-caption" data-lightbox-caption></div>
+      </div>
+    `;
+    document.body.appendChild(lightbox);
+  }
+
+  function handleGalleryClick(event) {
+    const galleryButton = event.target.closest("[data-gallery-city]");
+    if (galleryButton) {
+      event.preventDefault();
+      openLightbox(galleryButton.dataset.galleryCity, Number(galleryButton.dataset.galleryIndex || 0));
+      return;
+    }
+
+    if (event.target.closest("[data-lightbox-close]")) {
+      closeLightbox();
+      return;
+    }
+
+    if (event.target.closest("[data-lightbox-prev]")) {
+      moveLightbox(-1);
+      return;
+    }
+
+    if (event.target.closest("[data-lightbox-next]")) {
+      moveLightbox(1);
+    }
+  }
+
+  function handleLightboxKeydown(event) {
+    const lightbox = document.querySelector(".photo-lightbox");
+    if (!lightbox || lightbox.hidden) {
+      return;
+    }
+
+    if (event.key === "Escape") {
+      closeLightbox();
+    } else if (event.key === "ArrowLeft") {
+      moveLightbox(-1);
+    } else if (event.key === "ArrowRight") {
+      moveLightbox(1);
+    }
+  }
+
+  function openLightbox(city, index) {
+    const lightbox = document.querySelector(".photo-lightbox");
+    if (!lightbox || !photoCities[city]) {
+      return;
+    }
+
+    lightbox.dataset.city = city;
+    lightbox.dataset.index = String(index);
+    lightbox.hidden = false;
+    document.body.classList.add("lightbox-open");
+    renderLightbox();
+  }
+
+  function closeLightbox() {
+    const lightbox = document.querySelector(".photo-lightbox");
+    if (!lightbox) {
+      return;
+    }
+
+    lightbox.hidden = true;
+    document.body.classList.remove("lightbox-open");
+  }
+
+  function moveLightbox(delta) {
+    const lightbox = document.querySelector(".photo-lightbox");
+    if (!lightbox || lightbox.hidden) {
+      return;
+    }
+
+    const photos = photoCities[lightbox.dataset.city] || [];
+    if (!photos.length) {
+      return;
+    }
+
+    const nextIndex = (Number(lightbox.dataset.index || 0) + delta + photos.length) % photos.length;
+    lightbox.dataset.index = String(nextIndex);
+    renderLightbox();
+  }
+
+  function renderLightbox() {
+    const lightbox = document.querySelector(".photo-lightbox");
+    const city = lightbox.dataset.city;
+    const photos = photoCities[city] || [];
+    const index = Math.min(Number(lightbox.dataset.index || 0), photos.length - 1);
+    const photo = photos[index];
+
+    if (!photo) {
+      return;
+    }
+
+    const image = lightbox.querySelector("[data-lightbox-image]");
+    const caption = lightbox.querySelector("[data-lightbox-caption]");
+    image.src = photo.src;
+    image.alt = photo.alt || city;
+    caption.textContent = `${city} ${index + 1} / ${photos.length}`;
   }
 
   function escapeHtml(value) {
