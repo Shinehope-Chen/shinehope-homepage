@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Shinehope | 个人主页</title>
+    <meta
+      name="description"
+      content="Shinehope 的个人主页，展示个人履历、科研兴趣与日常生活。"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header" aria-label="页面导航">
+      <a class="brand" href="#top" aria-label="返回首页">Shinehope</a>
+      <nav class="nav-links" aria-label="主导航">
+        <a href="#profile">个人履历</a>
+        <a href="#research">科研兴趣</a>
+        <a href="#life">日常生活</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+          <p class="kicker">Personal Homepage</p>
+          <h1 id="hero-title">Shinehope</h1>
+          <p class="hero-copy">
+            在研究、学习和生活之间保持好奇：记录阶段性的成长，也整理那些值得继续追问的问题。
+          </p>
+          <div class="hero-actions" aria-label="快捷入口">
+            <a class="button primary" href="#profile">查看履历</a>
+            <a class="button secondary" href="#research">科研兴趣</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="intro-band" aria-label="页面概览">
+        <div class="intro-item">
+          <span>01</span>
+          <strong>履历</strong>
+          <p>学习经历、研究训练、项目经验与阶段成果。</p>
+        </div>
+        <div class="intro-item">
+          <span>02</span>
+          <strong>科研</strong>
+          <p>持续关注的问题、方法与未来想深入的方向。</p>
+        </div>
+        <div class="intro-item">
+          <span>03</span>
+          <strong>生活</strong>
+          <p>阅读、观察、行走与日常中的灵感来源。</p>
+        </div>
+      </section>
+
+      <section class="section" id="profile" aria-labelledby="profile-title">
+        <div class="section-heading">
+          <p class="eyebrow">Profile</p>
+          <h2 id="profile-title">个人履历</h2>
+        </div>
+        <div class="timeline">
+          <article class="timeline-item">
+            <time>现在</time>
+            <div>
+              <h3>学习与科研训练</h3>
+              <p>
+                目前专注于系统梳理专业知识、提升研究能力，并在具体问题中训练数据分析、建模、写作与表达。
+              </p>
+            </div>
+          </article>
+          <article class="timeline-item">
+            <time>近期</time>
+            <div>
+              <h3>项目与阶段成果</h3>
+              <p>
+                参与课程项目、科研讨论或个人探索，逐步形成从问题定义到结果展示的完整工作流。
+              </p>
+            </div>
+          </article>
+          <article class="timeline-item">
+            <time>持续</time>
+            <div>
+              <h3>能力建设</h3>
+              <p>
+                保持英文文献阅读、代码实践、学术写作与公开表达的长期训练，让想法能够被清楚地验证和交流。
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section research-section" id="research" aria-labelledby="research-title">
+        <div class="section-heading">
+          <p class="eyebrow">Research</p>
+          <h2 id="research-title">科研兴趣</h2>
+        </div>
+        <div class="research-grid">
+          <article class="research-card">
+            <span class="card-index">A</span>
+            <h3>问题驱动的研究</h3>
+            <p>
+              关注真实问题背后的机制、结构与可解释性，希望把复杂现象拆解成可以验证的假设。
+            </p>
+          </article>
+          <article class="research-card">
+            <span class="card-index">B</span>
+            <h3>数据与模型</h3>
+            <p>
+              对数据分析、算法建模、实验设计与可视化表达感兴趣，重视方法的可靠性与边界条件。
+            </p>
+          </article>
+          <article class="research-card">
+            <span class="card-index">C</span>
+            <h3>跨学科连接</h3>
+            <p>
+              喜欢在不同领域之间寻找共同语言，把工具、理论和问题场景连接起来，形成新的理解路径。
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section life-section" id="life" aria-labelledby="life-title">
+        <div class="section-heading">
+          <p class="eyebrow">Life</p>
+          <h2 id="life-title">日常生活</h2>
+        </div>
+        <div class="life-layout">
+          <div class="life-copy">
+            <p>
+              生活里的观察常常会回到研究中：一本书、一段散步、一次旅行、一次和朋友的长谈，都可能成为新的问题意识。
+            </p>
+            <p>
+              这里可以继续加入照片、读书记录、运动习惯、旅行片段，或者任何能让这个主页更像你的内容。
+            </p>
+          </div>
+          <ul class="life-list" aria-label="生活关键词">
+            <li>阅读与笔记</li>
+            <li>摄影与观察</li>
+            <li>散步与旅行</li>
+            <li>音乐与电影</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="year"></span> Shinehope</p>
+      <a href="#top">回到顶部</a>
+    </footer>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
