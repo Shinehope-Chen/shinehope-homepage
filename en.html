@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Shinehope | Personal Homepage</title>
+    <meta
+      name="description"
+      content="Shinehope's personal homepage, featuring profile, research interests, and everyday life."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header" aria-label="Page navigation">
+      <a class="brand" href="#top" aria-label="Back to top">Shinehope</a>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#profile">Profile</a>
+        <a href="#research">Research</a>
+        <a href="#life">Life</a>
+        <div class="language-switch">
+          <button type="button" aria-haspopup="true">Language</button>
+          <div class="language-panel" aria-label="Language options">
+            <a href="./index.html">简体中文</a>
+            <a href="./en.html" aria-current="page">English</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+          <p class="kicker">Personal Homepage</p>
+          <h1 id="hero-title">Shinehope</h1>
+          <p class="hero-copy">
+            Staying curious across research, study, and life: recording each stage of growth and organizing the questions worth pursuing.
+          </p>
+          <div class="hero-actions" aria-label="Quick links">
+            <a class="button primary" href="#profile">View Profile</a>
+            <a class="button secondary" href="#research">Research</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="intro-band" aria-label="Page overview">
+        <div class="intro-item">
+          <span>01</span>
+          <strong>Profile</strong>
+          <p>Academic training in astronomy and current work in astrophysics.</p>
+        </div>
+        <div class="intro-item">
+          <span>02</span>
+          <strong>Research</strong>
+          <p>Interested in active galactic nuclei and time-domain astronomy.</p>
+        </div>
+        <div class="intro-item">
+          <span>03</span>
+          <strong>Life</strong>
+          <p>Reading, observing, traveling, and collecting everyday inspiration.</p>
+        </div>
+      </section>
+
+      <section class="section" id="profile" aria-labelledby="profile-title">
+        <div class="section-heading">
+          <p class="eyebrow">Profile</p>
+          <h2 id="profile-title">Profile</h2>
+        </div>
+        <div class="timeline">
+          <article class="timeline-item">
+            <time>Sep 2018 ~ Jun 2023</time>
+            <div>
+              <h3>University of Chinese Academy of Sciences</h3>
+              <p>Bachelor of Science in Astronomy</p>
+            </div>
+          </article>
+          <article class="timeline-item">
+            <time>Jun 2023 ~ Present</time>
+            <div>
+              <h3>University of Chinese Academy of Sciences / National Astronomical Observatories, CAS</h3>
+              <p>Integrated master's and doctoral program in astrophysics</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section research-section" id="research" aria-labelledby="research-title">
+        <div class="section-heading">
+          <p class="eyebrow">Research</p>
+          <h2 id="research-title">Research Interests</h2>
+        </div>
+        <div class="research-grid">
+          <article class="research-card">
+            <span class="card-index">A</span>
+            <h3>Active Galactic Nuclei</h3>
+            <p>
+              Exploring supermassive black hole accretion, radiation, galaxy environments, and multiwavelength AGN phenomena.
+            </p>
+          </article>
+          <article class="research-card">
+            <span class="card-index">B</span>
+            <h3>Time-Domain Astronomy</h3>
+            <p>
+              Interested in variable and transient signals, and the physical mechanisms behind evolving astronomical sources.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section life-section" id="life" aria-labelledby="life-title">
+        <div class="section-heading">
+          <p class="eyebrow">Life</p>
+          <h2 id="life-title">Everyday Life</h2>
+        </div>
+        <div class="life-layout">
+          <div class="life-copy">
+            <p>
+              Everyday observations often return to research: a book, a walk, a trip, or a long conversation can all become new ways of asking questions.
+            </p>
+            <p>
+              I also leave room for music, films, and series. G.E.M.'s voice and songwriting carry real force, while Stranger Things opens another kind of imagination outside the research rhythm.
+            </p>
+          </div>
+          <ul class="life-list" aria-label="Life keywords">
+            <li>Reading & Notes</li>
+            <li>Photography & Observation</li>
+            <li>
+              <a class="life-link" href="./travel-en.html">
+                <span>Travel</span>
+                <strong>Footprints</strong>
+              </a>
+            </li>
+            <li class="life-menu">
+              <button class="life-menu-button" type="button" aria-haspopup="true">
+                <span>Audio-Visual Entertainment</span>
+                <strong>Topics</strong>
+              </button>
+              <div class="life-menu-panel" aria-label="Entertainment topics">
+                <a href="./gem-en.html">
+                  <span>Music</span>
+                  <strong>G.E.M. Topic</strong>
+                </a>
+                <a href="./stranger-things-en.html">
+                  <span>Films & Series</span>
+                  <strong>Stranger Things Topic</strong>
+                </a>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="year"></span> Shinehope</p>
+      <a href="#top">Back to Top</a>
+    </footer>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

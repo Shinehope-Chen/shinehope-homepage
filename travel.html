@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>旅行 | Shinehope</title>
+    <meta name="description" content="Shinehope 的旅行足迹页面，展示去过的中国城市。" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="travel-page">
+    <header class="site-header" aria-label="页面导航">
+      <a class="brand" href="./index.html">Shinehope</a>
+      <nav class="nav-links" aria-label="主导航">
+        <a href="./index.html#life">日常生活</a>
+        <a href="./gem.html">邓紫棋</a>
+        <a href="./stranger-things.html">怪奇物语</a>
+        <div class="language-switch">
+          <button type="button" aria-haspopup="true">语言</button>
+          <div class="language-panel" aria-label="语言选择">
+            <a href="./travel.html" aria-current="page">简体中文</a>
+            <a href="./travel-en.html">English</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="travel-hero" aria-labelledby="travel-title">
+        <div class="show-hero-content">
+          <p class="kicker">Travel Footprints</p>
+          <h1 id="travel-title">旅行</h1>
+          <p>
+            把去过的地方标在地图上，就像给记忆加上一层坐标。每一次出发，都可能带回新的风景、问题和灵感。
+          </p>
+          <div class="hero-actions" aria-label="页面入口">
+            <a class="button primary" href="#map">查看地图</a>
+            <a class="button secondary" href="./index.html#life">返回主页</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section travel-section" id="map" aria-labelledby="map-title">
+        <div class="section-heading">
+          <p class="eyebrow">Map</p>
+          <h2 id="map-title">去过的地方</h2>
+        </div>
+        <figure class="travel-map">
+          <img src="./assets/china-visited-cities.jpg" alt="Shinehope 去过的中国城市地图" />
+          <figcaption>中国城市旅行足迹地图</figcaption>
+        </figure>
+      </section>
+
+      <section class="section travel-notes" aria-labelledby="notes-title">
+        <div class="section-heading">
+          <p class="eyebrow">Notes</p>
+          <h2 id="notes-title">旅行中的收获</h2>
+        </div>
+        <div class="reason-grid light-grid">
+          <article>
+            <h3>风景</h3>
+            <p>不同地区的地貌、天气和城市肌理，会让熟悉的生活被重新打开。</p>
+          </article>
+          <article>
+            <h3>观察</h3>
+            <p>旅行也是练习观察的方式：看路、看人、看地方如何和时间一起变化。</p>
+          </article>
+          <article>
+            <h3>灵感</h3>
+            <p>有些想法不是坐在桌前出现的，而是在移动、停留和回望之间慢慢成形。</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="year"></span> Shinehope</p>
+      <a href="./index.html#life">回到日常生活</a>
+    </footer>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

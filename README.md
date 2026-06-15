@@ -12,3 +12,7 @@ Upload the contents of this folder to a public GitHub repository, then enable:
 - Folder: /root
 
 The site entry point is `index.html`.
+
+## Maintenance Note
+
+When adding a new feature or topic page, add both Simplified Chinese and English versions and connect them through the language switcher.

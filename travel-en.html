@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Travel | Shinehope</title>
+    <meta name="description" content="Shinehope's travel footprint page, showing visited cities in China." />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="travel-page">
+    <header class="site-header" aria-label="Page navigation">
+      <a class="brand" href="./en.html">Shinehope</a>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="./en.html#life">Life</a>
+        <a href="./gem-en.html">G.E.M.</a>
+        <a href="./stranger-things-en.html">Stranger Things</a>
+        <div class="language-switch">
+          <button type="button" aria-haspopup="true">Language</button>
+          <div class="language-panel" aria-label="Language options">
+            <a href="./travel.html">简体中文</a>
+            <a href="./travel-en.html" aria-current="page">English</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="travel-hero" aria-labelledby="travel-title">
+        <div class="show-hero-content">
+          <p class="kicker">Travel Footprints</p>
+          <h1 id="travel-title">Travel</h1>
+          <p>
+            Marking visited places on a map gives memory a set of coordinates. Each trip brings back scenery, questions, and small sparks of inspiration.
+          </p>
+          <div class="hero-actions" aria-label="Page links">
+            <a class="button primary" href="#map">View Map</a>
+            <a class="button secondary" href="./en.html#life">Back Home</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section travel-section" id="map" aria-labelledby="map-title">
+        <div class="section-heading">
+          <p class="eyebrow">Map</p>
+          <h2 id="map-title">Places I Have Visited</h2>
+        </div>
+        <figure class="travel-map">
+          <img src="./assets/china-visited-cities.jpg" alt="Map of Chinese cities visited by Shinehope" />
+          <figcaption>Travel footprint map across China</figcaption>
+        </figure>
+      </section>
+
+      <section class="section travel-notes" aria-labelledby="notes-title">
+        <div class="section-heading">
+          <p class="eyebrow">Notes</p>
+          <h2 id="notes-title">What Travel Gives Back</h2>
+        </div>
+        <div class="reason-grid light-grid">
+          <article>
+            <h3>Scenery</h3>
+            <p>Different landscapes, weather, and city textures reopen familiar ways of seeing.</p>
+          </article>
+          <article>
+            <h3>Observation</h3>
+            <p>Travel is also a practice of attention: roads, people, and places changing with time.</p>
+          </article>
+          <article>
+            <h3>Inspiration</h3>
+            <p>Some ideas do not arrive at the desk; they take shape while moving, pausing, and looking back.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="year"></span> Shinehope</p>
+      <a href="./en.html#life">Back to Life</a>
+    </footer>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
