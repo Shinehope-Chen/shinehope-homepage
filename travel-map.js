@@ -7,10 +7,16 @@
 
   const lang = mapNode.dataset.lang === "en" ? "en" : "zh";
   const data = window.SHINEHOPE_VISITED_CITIES.cities || [];
+  const photoCities = (window.SHINEHOPE_TRAVEL_PHOTOS && window.SHINEHOPE_TRAVEL_PHOTOS.cities) || {};
   const countNodes = document.querySelectorAll("[data-map-count]");
+  const photoCountNodes = document.querySelectorAll("[data-photo-city-count]");
 
   countNodes.forEach((node) => {
     node.textContent = String(data.length);
+  });
+
+  photoCountNodes.forEach((node) => {
+    node.textContent = String(Object.keys(photoCities).length);
   });
 
   const text = {
@@ -20,6 +26,8 @@
       days: "记录天数",
       period: "时间范围",
       points: "聚合点数",
+      photos: "照片",
+      photoHint: "点击照片可打开大图",
       tileCredit: "底图",
       dataCredit: "标记为市级聚合结果"
     },
@@ -29,6 +37,8 @@
       days: "Recorded days",
       period: "Period",
       points: "Aggregated points",
+      photos: "Photos",
+      photoHint: "Click a photo to open the larger image",
       tileCredit: "Tiles",
       dataCredit: "Markers are aggregated to city level"
     }
@@ -51,30 +61,35 @@
   const bounds = [];
 
   data.forEach((item, index) => {
+    const photos = photoCities[item.city] || [];
+    const hasPhotos = photos.length > 0;
     const marker = L.circleMarker([item.lat, item.lng], {
-      radius: 7,
-      color: "#ffffff",
-      weight: 1.5,
+      radius: hasPhotos ? 9 : 7,
+      color: hasPhotos ? "#ffcf4a" : "#ffffff",
+      weight: hasPhotos ? 3 : 1.5,
       fillColor: colorFor(index, data.length),
       fillOpacity: 0.92,
-      className: "visited-city-marker"
+      className: hasPhotos ? "visited-city-marker has-photos" : "visited-city-marker"
     });
 
-    const label = lang === "zh" ? item.city : item.city;
-    marker.bindTooltip(label, {
+    const label = hasPhotos
+      ? `${item.city}${lang === "zh" ? " · 有照片" : " · photos"}`
+      : item.city;
+    marker.bindTooltip(escapeHtml(label), {
       permanent: false,
       direction: "top",
       offset: [0, -8],
-      className: "city-label"
+      className: hasPhotos ? "city-label has-photos" : "city-label"
     });
 
     marker.bindPopup(`
       <div class="map-popup">
-        <strong>${item.city}</strong>
-        <span>${text.province}: ${item.province}</span>
+        <strong>${escapeHtml(item.city)}</strong>
+        <span>${text.province}: ${escapeHtml(item.province)}</span>
         <span>${text.days}: ${item.dayCount}</span>
         <span>${text.period}: ${item.firstDate} ~ ${item.lastDate}</span>
         <span>${text.points}: ${item.pointCount}</span>
+        ${photoGallery(photos, item.city)}
       </div>
     `);
 
@@ -105,5 +120,37 @@
   function colorFor(index, total) {
     const hue = Math.round((index / Math.max(total, 1)) * 290 + 10);
     return `hsl(${hue} 82% 48%)`;
+  }
+
+  function photoGallery(photos, city) {
+    if (!photos.length) {
+      return "";
+    }
+
+    const images = photos.map((photo, photoIndex) => `
+      <a href="${escapeHtml(photo.src)}" target="_blank" rel="noopener" aria-label="${escapeHtml(city)} ${text.photos} ${photoIndex + 1}">
+        <img src="${escapeHtml(photo.src)}" alt="${escapeHtml(photo.alt || city)}" loading="lazy" width="${photo.width || 180}" height="${photo.height || 120}">
+      </a>
+    `).join("");
+
+    return `
+      <div class="map-photo-gallery">
+        <div class="map-photo-heading">
+          <span>${text.photos} (${photos.length})</span>
+          <small>${text.photoHint}</small>
+        </div>
+        <div class="map-photo-strip">${images}</div>
+      </div>
+    `;
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[char]);
   }
 })();

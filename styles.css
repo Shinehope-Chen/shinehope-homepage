@@ -702,6 +702,10 @@ a {
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.24));
 }
 
+.visited-city-marker.has-photos {
+  filter: drop-shadow(0 4px 10px rgba(255, 196, 60, 0.5));
+}
+
 .city-label {
   border: 0;
   border-radius: 6px;
@@ -711,14 +715,24 @@ a {
   font-weight: 800;
 }
 
+.city-label.has-photos {
+  background: rgba(54, 39, 5, 0.94);
+  color: #fff7d6;
+}
+
 .city-label::before {
   border-top-color: rgba(11, 24, 26, 0.88);
 }
 
+.city-label.has-photos::before {
+  border-top-color: rgba(54, 39, 5, 0.94);
+}
+
 .map-popup {
   display: grid;
-  gap: 4px;
-  min-width: 180px;
+  gap: 5px;
+  min-width: 220px;
+  max-width: min(360px, 72vw);
   color: var(--ink);
 }
 
@@ -729,6 +743,62 @@ a {
 
 .map-popup span {
   color: var(--muted);
+}
+
+.map-photo-gallery {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+
+.map-photo-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.map-photo-heading span {
+  color: var(--teal-dark);
+  font-weight: 800;
+}
+
+.map-photo-heading small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.map-photo-strip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 112px;
+  gap: 8px;
+  max-width: 336px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.map-photo-strip a {
+  display: block;
+  height: 78px;
+  overflow: hidden;
+  border-radius: 7px;
+  background: #e6ece8;
+}
+
+.map-photo-strip img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 160ms ease;
+}
+
+.map-photo-strip a:hover img {
+  transform: scale(1.04);
 }
 
 .travel-notes {
