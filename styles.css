@@ -306,6 +306,11 @@ a {
   align-items: start;
 }
 
+.life-section:has(.life-menu:hover),
+.life-section:has(.life-menu:focus-within) {
+  padding-bottom: clamp(190px, 18vw, 240px);
+}
+
 .life-copy {
   border-left: 4px solid var(--gold);
   padding-left: clamp(22px, 3vw, 34px);
@@ -328,32 +333,100 @@ a {
   font-weight: 760;
 }
 
-.life-list li:not(:has(.life-link)) {
+.life-list li:not(:has(.life-link)):not(.life-menu) {
   padding: 18px 20px;
 }
 
-.life-link {
+.life-link,
+.life-menu-button {
   display: grid;
   gap: 3px;
+  width: 100%;
+  border: 0;
+  background: transparent;
   padding: 18px 20px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   transition:
     background 180ms ease,
     transform 180ms ease;
+  cursor: pointer;
 }
 
 .life-link:hover,
-.life-link:focus-visible {
+.life-link:focus-visible,
+.life-menu:hover .life-menu-button,
+.life-menu:focus-within .life-menu-button {
   background: rgba(217, 101, 75, 0.08);
   transform: translateY(-1px);
 }
 
-.life-link span {
+.life-link span,
+.life-menu-button span {
   color: var(--teal-dark);
 }
 
-.life-link strong {
+.life-link strong,
+.life-menu-button strong {
   color: var(--coral);
   font-size: 0.88rem;
+}
+
+.life-menu {
+  position: relative;
+  overflow: visible;
+}
+
+.life-menu-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% - 1px);
+  z-index: 8;
+  display: grid;
+  width: min(280px, 92vw);
+  gap: 8px;
+  border: 1px solid rgba(22, 32, 31, 0.16);
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px;
+  box-shadow: 0 18px 46px rgba(15, 52, 53, 0.18);
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.life-menu:hover .life-menu-panel,
+.life-menu:focus-within .life-menu-panel {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.life-menu-panel a {
+  display: grid;
+  gap: 2px;
+  border-radius: 6px;
+  padding: 12px 14px;
+  transition: background 160ms ease;
+}
+
+.life-menu-panel a:hover,
+.life-menu-panel a:focus-visible {
+  background: rgba(15, 95, 98, 0.08);
+}
+
+.life-menu-panel span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.life-menu-panel strong {
+  color: var(--teal-dark);
+  font-size: 1rem;
 }
 
 .show-page {
@@ -589,6 +662,27 @@ a {
 
   .research-card {
     min-height: 230px;
+  }
+
+  .life-menu-panel {
+    position: static;
+    display: none;
+    width: 100%;
+    margin-top: -1px;
+    border-radius: 0 0 8px 8px;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .life-menu:hover .life-menu-panel,
+  .life-menu:focus-within .life-menu-panel {
+    display: grid;
+    transform: none;
+  }
+
+  .life-section:has(.life-menu:hover),
+  .life-section:has(.life-menu:focus-within) {
+    padding-bottom: clamp(74px, 9vw, 120px);
   }
 
   .season-grid article,
