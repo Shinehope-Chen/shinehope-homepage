@@ -10,7 +10,7 @@
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body>
+  <body class="home-page immersive-home">
     <header class="site-header" aria-label="Page navigation">
       <a class="brand" href="#top" aria-label="Back to top">Shinehope</a>
       <nav class="nav-links" aria-label="Main navigation">
@@ -27,125 +27,111 @@
       </nav>
     </header>
 
-    <main id="top">
-      <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-          <p class="kicker">Personal Homepage</p>
-          <h1 id="hero-title">Shinehope</h1>
-          <p class="hero-copy">
-            Staying curious across research, study, and life: recording each stage of growth and organizing the questions worth pursuing.
-          </p>
-          <div class="hero-actions" aria-label="Quick links">
-            <a class="button primary" href="#profile">View Profile</a>
-            <a class="button secondary" href="#research">Research Directions</a>
+    <main id="top" class="home-stage">
+      <section class="home-portal" aria-labelledby="hero-title">
+        <video class="hero-intro-video" autoplay muted playsinline preload="auto" aria-hidden="true">
+          <source src="./assets/home-intro.mp4" type="video/mp4" />
+        </video>
+        <div class="hero-stars" aria-hidden="true"></div>
+        <div class="home-portal-overlay" aria-hidden="true"></div>
+        <div class="home-portal-inner">
+          <h1 id="hero-title">Shinehope|Personal Homepage</h1>
+          <nav class="home-module-nav" aria-label="Homepage modules">
+            <button type="button" data-home-target="profile">Profile</button>
+            <button type="button" data-home-target="research">Research Directions</button>
+            <button type="button" data-home-target="interests">Interests</button>
+          </nav>
+        </div>
+      </section>
+
+      <section class="home-panel-shell" aria-live="polite">
+        <nav class="home-panel-nav" aria-label="Module switcher">
+          <button type="button" data-home-target="profile">Profile</button>
+          <button type="button" data-home-target="research">Research Directions</button>
+          <button type="button" data-home-target="interests">Interests</button>
+          <button type="button" data-home-close>Back to Background</button>
+        </nav>
+
+        <article class="home-panel" id="profile" data-home-panel="profile">
+          <div class="panel-heading">
+            <p class="eyebrow">Profile</p>
+            <h2>Profile</h2>
           </div>
-        </div>
-      </section>
-
-      <section class="intro-band" aria-label="Page overview">
-        <div class="intro-item">
-          <span>01</span>
-          <strong>Profile</strong>
-          <p>Academic training in astronomy and current work in astrophysics.</p>
-        </div>
-        <div class="intro-item">
-          <span>02</span>
-          <strong>Research</strong>
-          <p>Interested in active galactic nuclei and time-domain astronomy.</p>
-        </div>
-        <div class="intro-item">
-          <span>03</span>
-          <strong>Life</strong>
-          <p>Traveling, music, films, series, and collecting everyday inspiration.</p>
-        </div>
-      </section>
-
-      <section class="section" id="profile" aria-labelledby="profile-title">
-        <div class="section-heading">
-          <p class="eyebrow">Profile</p>
-          <h2 id="profile-title">Profile</h2>
-        </div>
-        <div class="timeline">
-          <article class="timeline-item">
-            <time>Sep 2018 ~ Jun 2023</time>
-            <div>
-              <h3>University of Chinese Academy of Sciences</h3>
-              <p>Bachelor of Science in Astronomy</p>
-            </div>
-          </article>
-          <article class="timeline-item">
-            <time>Jun 2023 ~ Present</time>
-            <div>
-              <h3>University of Chinese Academy of Sciences / National Astronomical Observatories, CAS</h3>
-              <p>Integrated master's and doctoral program in astrophysics</p>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="section research-section" id="research" aria-labelledby="research-title">
-        <div class="section-heading">
-          <p class="eyebrow">Research</p>
-          <h2 id="research-title">Research Directions</h2>
-        </div>
-        <div class="research-grid">
-          <a class="research-card" href="./agn-en.html">
-            <span class="card-index">A</span>
-            <h3>Active Galactic Nuclei / Changing-Look AGN</h3>
-            <p>
-              Exploring supermassive black hole accretion, unified AGN models, line-emitting regions, multiwavelength observations, and changing-look behavior.
-            </p>
-          </a>
-          <a class="research-card" href="./time-domain-en.html">
-            <span class="card-index">B</span>
-            <h3>Time-Domain Astronomy / Data Processing</h3>
-            <p>
-              Working with evolving astronomical signals, survey data processing, transient identification, and multi-messenger follow-up.
-            </p>
-          </a>
-        </div>
-      </section>
-
-      <section class="section life-section" id="life" aria-labelledby="life-title">
-        <div class="section-heading">
-          <p class="eyebrow">Life</p>
-          <h2 id="life-title">Everyday Life</h2>
-        </div>
-        <div class="life-layout">
-          <div class="life-copy">
-            <p>
-              Everyday observations often return to research: a book, a walk, a trip, or a long conversation can all become new ways of asking questions.
-            </p>
-            <p>
-              I also leave room for music, films, and series. G.E.M.'s voice and songwriting carry real force, while Stranger Things opens another kind of imagination outside the research rhythm.
-            </p>
+          <div class="timeline">
+            <article class="timeline-item">
+              <time>Sep 2018 ~ Jun 2023</time>
+              <div>
+                <h3 class="affiliation-list">
+                  <a href="https://www.ucas.ac.cn/" target="_blank" rel="noreferrer">University of Chinese Academy of Sciences</a>
+                  <a href="https://astro.ucas.ac.cn/index.php/cn/" target="_blank" rel="noreferrer">School of Astronomy and Space Science</a>
+                </h3>
+                <p>Bachelor of Science in Astronomy</p>
+              </div>
+            </article>
+            <article class="timeline-item">
+              <time>Jun 2023 ~ Present</time>
+              <div>
+                <h3 class="affiliation-list">
+                  <a href="https://www.ucas.ac.cn/" target="_blank" rel="noreferrer">University of Chinese Academy of Sciences</a>
+                  <a href="https://www.nao.cas.cn/" target="_blank" rel="noreferrer">National Astronomical Observatories, CAS</a>
+                </h3>
+                <p>Integrated master's and doctoral program in astrophysics</p>
+              </div>
+            </article>
           </div>
-          <ul class="life-list" aria-label="Life keywords">
+        </article>
+
+        <article class="home-panel" id="research" data-home-panel="research">
+          <div class="panel-heading">
+            <p class="eyebrow">Research</p>
+            <h2>Research Directions</h2>
+          </div>
+          <div class="research-grid">
+            <a class="research-card" href="./agn-en.html">
+              <span class="card-index">A</span>
+              <h3><span>Active Galactic Nuclei</span><span>Changing-Look AGN</span></h3>
+              <p>Supermassive black hole accretion, emission-line regions, multiwavelength data, and spectral transitions.</p>
+            </a>
+            <a class="research-card" href="./time-domain-en.html">
+              <span class="card-index">B</span>
+              <h3><span>Time-Domain Astronomy</span><span>Data Processing</span></h3>
+              <p>Survey pipelines, transient identification, multi-messenger follow-up, and rapid observations.</p>
+            </a>
+          </div>
+        </article>
+
+        <article class="home-panel" id="life" data-home-panel="interests">
+          <div class="panel-heading">
+            <p class="eyebrow">Interests</p>
+            <h2>Interests</h2>
+          </div>
+          <ul class="life-list" aria-label="Interest links">
             <li>
               <a class="life-link" href="./travel-en.html">
                 <span>Travel</span>
                 <strong>Footprints</strong>
               </a>
             </li>
-            <li class="life-menu">
-              <button class="life-menu-button" type="button" aria-haspopup="true">
-                <span>Audio-Visual Entertainment</span>
-                <strong>Topics</strong>
-              </button>
-              <div class="life-menu-panel" aria-label="Entertainment topics">
-                <a href="./gem-en.html">
-                  <span>Music</span>
-                  <strong>G.E.M. Topic</strong>
-                </a>
-                <a href="./stranger-things-en.html">
-                  <span>Films & Series</span>
-                  <strong>Stranger Things Topic</strong>
-                </a>
-              </div>
+            <li>
+              <a class="life-link" href="./gem-en.html">
+                <span>Favorite Singer</span>
+                <strong>G.E.M.</strong>
+              </a>
+            </li>
+            <li>
+              <a class="life-link" href="./stranger-things-en.html">
+                <span>Favorite Series</span>
+                <strong>Stranger Things</strong>
+              </a>
+            </li>
+            <li>
+              <a class="life-link" href="./curry-en.html">
+                <span>Favorite Athlete</span>
+                <strong>Stephen Curry</strong>
+              </a>
             </li>
           </ul>
-        </div>
+        </article>
       </section>
     </main>
 

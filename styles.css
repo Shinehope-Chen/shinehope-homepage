@@ -56,6 +56,19 @@ a {
     backdrop-filter 180ms ease;
 }
 
+.immersive-home {
+  height: 100svh;
+  overflow: hidden;
+}
+
+.immersive-home .site-header {
+  background: linear-gradient(180deg, rgba(4, 13, 15, 0.42), transparent);
+}
+
+.immersive-home .site-footer {
+  display: none;
+}
+
 .home-page .site-header.is-scrolled {
   background: rgba(9, 24, 27, 0.76);
   box-shadow: 0 14px 34px rgba(4, 13, 15, 0.16);
@@ -167,6 +180,185 @@ a {
 .home-page .hero {
   min-height: 78svh;
   align-items: stretch;
+}
+
+.home-stage {
+  position: relative;
+  height: 100svh;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(4, 13, 15, 0.16), rgba(4, 13, 15, 0.5)),
+    url("./assets/hero-shinehope.jpg") center / cover no-repeat;
+}
+
+.home-portal {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  transition:
+    opacity 720ms ease,
+    transform 720ms cubic-bezier(0.2, 0.72, 0.18, 1);
+}
+
+.home-panel-open .home-portal {
+  opacity: 0;
+  transform: translateY(-100%);
+  pointer-events: none;
+}
+
+.home-portal-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(217, 101, 75, 0.16), transparent 26%),
+    linear-gradient(180deg, rgba(4, 13, 15, 0.14), rgba(4, 13, 15, 0.52));
+  pointer-events: none;
+}
+
+.home-portal-inner {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  justify-items: center;
+  width: min(960px, calc(100% - 40px));
+  color: #fff;
+  text-align: center;
+}
+
+.home-portal h1 {
+  margin: 0;
+  font-size: clamp(3.2rem, 8vw, 7.6rem);
+  line-height: 0.95;
+  letter-spacing: 0;
+  text-shadow: 0 18px 70px rgba(0, 0, 0, 0.44);
+  animation: hero-rise 760ms ease both;
+}
+
+.home-module-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(22px, 5vw, 64px);
+  margin-top: clamp(32px, 6vw, 58px);
+  animation: hero-rise 760ms 120ms ease both;
+}
+
+.home-module-nav button,
+.home-panel-nav button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 850;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.home-module-nav button {
+  color: rgba(255, 255, 255, 0.86);
+  font-size: clamp(1.2rem, 2.2vw, 1.7rem);
+}
+
+.home-module-nav button:hover,
+.home-module-nav button:focus-visible,
+.home-panel-nav button:hover,
+.home-panel-nav button:focus-visible,
+.home-panel-nav button.is-active {
+  color: #f09b6f;
+  transform: translateY(-2px);
+}
+
+.home-panel-shell {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background:
+    linear-gradient(180deg, rgba(247, 248, 244, 0.94), rgba(247, 248, 244, 0.98)),
+    url("./assets/hero-shinehope.jpg") center / cover no-repeat;
+  color: var(--ink);
+  opacity: 0;
+  transform: translateY(100%);
+  pointer-events: none;
+  transition:
+    opacity 720ms ease,
+    transform 720ms cubic-bezier(0.2, 0.72, 0.18, 1);
+}
+
+.home-panel-open .home-panel-shell {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.home-panel-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(16px, 4vw, 44px);
+  border-bottom: 1px solid var(--line);
+  padding: 24px clamp(18px, 4vw, 56px) 18px;
+  color: var(--teal-dark);
+}
+
+.home-panel-nav button[data-home-close] {
+  color: var(--coral);
+}
+
+.home-panel {
+  display: none;
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  overflow-y: auto;
+  padding: clamp(36px, 7vw, 72px) 0;
+}
+
+.home-panel.is-active {
+  display: block;
+  animation: panel-in 420ms ease both;
+}
+
+.home-panel .panel-heading {
+  justify-content: flex-start;
+  margin-bottom: clamp(24px, 4vw, 42px);
+}
+
+.home-panel .panel-heading h2 {
+  margin: 0;
+  color: var(--teal-dark);
+  font-size: clamp(2.4rem, 5vw, 4.6rem);
+  line-height: 1;
+}
+
+.home-panel .research-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.home-panel .research-card h3 {
+  display: grid;
+  gap: 8px;
+}
+
+.home-panel .life-list {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .hero-intro-video {
@@ -956,6 +1148,21 @@ a {
   padding: clamp(22px, 3vw, 30px);
 }
 
+.actor-grid article {
+  display: flex;
+  flex-direction: column;
+}
+
+.actor-grid img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #111a29;
+}
+
 .season-grid span,
 .track-grid span,
 .actor-grid span,
@@ -980,6 +1187,14 @@ a {
 }
 
 .link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 22px;
+}
+
+.actor-links {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -1030,6 +1245,10 @@ a {
   margin-top: 22px;
 }
 
+.actor-links a {
+  margin-top: 0;
+}
+
 .honor-grid article {
   min-height: 190px;
 }
@@ -1073,6 +1292,46 @@ a {
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 28px;
+}
+
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.media-card {
+  overflow: hidden;
+  border: 1px solid rgba(246, 242, 233, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.media-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: #111a29;
+}
+
+.media-card figcaption {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 16px;
+  color: rgba(246, 242, 233, 0.72);
+}
+
+.media-card strong {
+  color: #f6f2e9;
+}
+
+.media-card a {
+  width: max-content;
+  color: #f09b6f;
+  font-weight: 850;
 }
 
 .source-note {
@@ -1505,6 +1764,36 @@ a {
     padding-top: 104px;
   }
 
+  .immersive-home .site-header {
+    position: fixed;
+  }
+
+  .home-portal h1 {
+    font-size: clamp(2.7rem, 14vw, 4.8rem);
+  }
+
+  .home-module-nav {
+    display: grid;
+    gap: 18px;
+  }
+
+  .home-panel-nav {
+    justify-content: flex-start;
+    gap: 12px 20px;
+    padding-top: 86px;
+    font-size: 0.92rem;
+  }
+
+  .home-panel {
+    width: min(100% - 32px, 1120px);
+    padding: 32px 0 44px;
+  }
+
+  .home-panel .research-grid,
+  .home-panel .life-list {
+    grid-template-columns: 1fr;
+  }
+
   .home-page .hero-content {
     width: auto;
     margin-left: 0;
@@ -1531,6 +1820,7 @@ a {
   .season-grid,
   .reason-grid,
   .track-grid,
+  .media-grid,
   .actor-grid,
   .honor-grid,
   .curry-feature-grid {

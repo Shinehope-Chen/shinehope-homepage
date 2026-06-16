@@ -48,6 +48,81 @@ if (introVideo) {
   }
 }
 
+const homeStage = document.querySelector(".home-stage");
+
+if (homeStage) {
+  const panelButtons = document.querySelectorAll("[data-home-target]");
+  const panels = document.querySelectorAll("[data-home-panel]");
+  const closeButtons = document.querySelectorAll("[data-home-close]");
+  const hashToPanel = {
+    "#profile": "profile",
+    "#research": "research",
+    "#life": "interests",
+    "#interests": "interests",
+  };
+
+  const openPanel = (target) => {
+    document.body.classList.add("home-panel-open");
+    panels.forEach((panel) => {
+      panel.classList.toggle("is-active", panel.dataset.homePanel === target);
+    });
+    panelButtons.forEach((button) => {
+      button.classList.toggle("is-active", button.dataset.homeTarget === target);
+    });
+  };
+
+  const closePanel = () => {
+    document.body.classList.remove("home-panel-open");
+    panels.forEach((panel) => panel.classList.remove("is-active"));
+    panelButtons.forEach((button) => button.classList.remove("is-active"));
+  };
+
+  panelButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      openPanel(button.dataset.homeTarget);
+    });
+  });
+
+  closeButtons.forEach((button) => {
+    button.addEventListener("click", closePanel);
+  });
+
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest('a[href^="#"]');
+
+    if (!link) {
+      return;
+    }
+
+    const panel = hashToPanel[link.getAttribute("href")];
+
+    if (panel) {
+      event.preventDefault();
+      openPanel(panel);
+      history.replaceState(null, "", link.getAttribute("href"));
+    } else if (link.getAttribute("href") === "#top") {
+      closePanel();
+    }
+  });
+
+  const openHashPanel = () => {
+    const panel = hashToPanel[window.location.hash];
+
+    if (panel) {
+      openPanel(panel);
+    }
+  };
+
+  openHashPanel();
+  window.addEventListener("hashchange", openHashPanel);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && document.body.classList.contains("home-panel-open")) {
+      closePanel();
+    }
+  });
+}
+
 const revealNodes = document.querySelectorAll("[data-reveal]");
 
 if (revealNodes.length) {

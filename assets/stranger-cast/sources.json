@@ -1,0 +1,74 @@
+[
+  {
+    "slug": "finn-wolfhard",
+    "name": "Finn Wolfhard",
+    "file": "assets/stranger-cast/finn-wolfhard.png",
+    "source": "https://en.wikipedia.org/wiki/Finn_Wolfhard"
+  },
+  {
+    "slug": "millie-bobby-brown",
+    "name": "Millie Bobby Brown",
+    "file": "assets/stranger-cast/millie-bobby-brown.jpg",
+    "source": "https://en.wikipedia.org/wiki/Millie_Bobby_Brown"
+  },
+  {
+    "slug": "gaten-matarazzo",
+    "name": "Gaten Matarazzo",
+    "file": "assets/stranger-cast/gaten-matarazzo.jpg",
+    "source": "https://en.wikipedia.org/wiki/Gaten_Matarazzo"
+  },
+  {
+    "slug": "caleb-mclaughlin",
+    "name": "Caleb McLaughlin",
+    "file": "assets/stranger-cast/caleb-mclaughlin.png",
+    "source": "https://en.wikipedia.org/wiki/Caleb_McLaughlin"
+  },
+  {
+    "slug": "sadie-sink",
+    "name": "Sadie Sink",
+    "file": "assets/stranger-cast/sadie-sink.jpg",
+    "source": "https://en.wikipedia.org/wiki/Sadie_Sink"
+  },
+  {
+    "slug": "noah-schnapp",
+    "name": "Noah Schnapp",
+    "file": "assets/stranger-cast/noah-schnapp.jpg",
+    "source": "https://en.wikipedia.org/wiki/Noah_Schnapp"
+  },
+  {
+    "slug": "joe-keery",
+    "name": "Joe Keery",
+    "file": "assets/stranger-cast/joe-keery.png",
+    "source": "https://en.wikipedia.org/wiki/Joe_Keery"
+  },
+  {
+    "slug": "maya-hawke",
+    "name": "Maya Hawke",
+    "file": "assets/stranger-cast/maya-hawke.jpg",
+    "source": "https://en.wikipedia.org/wiki/Maya_Hawke"
+  },
+  {
+    "slug": "natalia-dyer",
+    "name": "Natalia Dyer",
+    "file": "assets/stranger-cast/natalia-dyer.png",
+    "source": "https://en.wikipedia.org/wiki/Natalia_Dyer"
+  },
+  {
+    "slug": "charlie-heaton",
+    "name": "Charlie Heaton",
+    "file": "assets/stranger-cast/charlie-heaton.jpg",
+    "source": "https://en.wikipedia.org/wiki/Charlie_Heaton"
+  },
+  {
+    "slug": "winona-ryder",
+    "name": "Winona Ryder",
+    "file": "assets/stranger-cast/winona-ryder.jpg",
+    "source": "https://en.wikipedia.org/wiki/Winona_Ryder"
+  },
+  {
+    "slug": "david-harbour",
+    "name": "David Harbour",
+    "file": "assets/stranger-cast/david-harbour.jpg",
+    "source": "https://en.wikipedia.org/wiki/David_Harbour"
+  }
+]

@@ -10,7 +10,7 @@
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body class="home-page">
+  <body class="home-page immersive-home">
     <header class="site-header" aria-label="页面导航">
       <a class="brand" href="#top" aria-label="返回首页">Shinehope</a>
       <nav class="nav-links" aria-label="主导航">
@@ -27,143 +27,111 @@
       </nav>
     </header>
 
-    <main id="top">
-      <section class="hero" aria-labelledby="hero-title">
+    <main id="top" class="home-stage">
+      <section class="home-portal" aria-labelledby="hero-title">
         <video class="hero-intro-video" autoplay muted playsinline preload="auto" aria-hidden="true">
           <source src="./assets/home-intro.mp4" type="video/mp4" />
         </video>
         <div class="hero-stars" aria-hidden="true"></div>
-        <div class="hero-overlay"></div>
-        <div class="hero-dashboard">
-          <div class="hero-content">
-            <p class="kicker">Personal Homepage</p>
-            <h1 id="hero-title">Shinehope</h1>
-            <p class="hero-copy">
-              在研究、学习和生活之间保持好奇：记录阶段性的成长，也整理那些值得继续追问的问题。
-            </p>
-            <div class="hero-actions" aria-label="快捷入口">
-              <a class="button primary" href="#research">研究方向</a>
-              <a class="button secondary" href="#life">日常生活</a>
-            </div>
-          </div>
-          <aside class="hero-status-card" aria-label="个人概览">
-            <div>
-              <span>Current</span>
-              <strong>UCAS / NAOC</strong>
-              <p>天体物理学硕博连读</p>
-            </div>
-            <div>
-              <span>Research</span>
-              <strong>AGN · Time Domain</strong>
-              <p>活动星系核、时域天文学与数据处理</p>
-            </div>
-            <div class="keyword-strip" aria-label="关键词">
-              <a href="./agn.html">AGN</a>
-              <a href="./time-domain.html">巡天</a>
-              <a href="./travel.html">旅行</a>
-            </div>
-          </aside>
+        <div class="home-portal-overlay" aria-hidden="true"></div>
+        <div class="home-portal-inner">
+          <h1 id="hero-title">Shinehope|个人主页</h1>
+          <nav class="home-module-nav" aria-label="主页模块">
+            <button type="button" data-home-target="profile">个人履历</button>
+            <button type="button" data-home-target="research">研究方向</button>
+            <button type="button" data-home-target="interests">兴趣爱好</button>
+          </nav>
         </div>
       </section>
 
-      <section class="section home-dashboard-section" aria-labelledby="dashboard-title">
-        <div class="section-heading" data-reveal>
-          <p class="eyebrow">Dashboard</p>
-          <h2 id="dashboard-title">快速概览</h2>
-        </div>
-        <div class="dashboard-grid">
-          <div class="dashboard-panel profile-panel" id="profile" data-reveal>
-            <div class="panel-heading">
-              <p class="eyebrow">Profile</p>
-              <h3>个人履历</h3>
-            </div>
-            <div class="timeline">
-              <article class="timeline-item">
-                <time>2018.9 ~ 2023.6</time>
-                <div>
-                  <h3 class="affiliation-list">
-                    <a href="https://www.ucas.ac.cn/" target="_blank" rel="noreferrer">中国科学院大学</a>
-                    <a href="https://astro.ucas.ac.cn/index.php/cn/" target="_blank" rel="noreferrer">天文与空间科学学院</a>
-                  </h3>
-                  <p>天文学学士</p>
-                </div>
-              </article>
-              <article class="timeline-item">
-                <time>2023.6 ~ 至今</time>
-                <div>
-                  <h3 class="affiliation-list">
-                    <a href="https://www.ucas.ac.cn/" target="_blank" rel="noreferrer">中国科学院大学</a>
-                    <a href="https://www.nao.cas.cn/" target="_blank" rel="noreferrer">中国科学院国家天文台</a>
-                  </h3>
-                  <p>天体物理学硕博连读</p>
-                </div>
-              </article>
-            </div>
-          </div>
+      <section class="home-panel-shell" aria-live="polite">
+        <nav class="home-panel-nav" aria-label="模块切换">
+          <button type="button" data-home-target="profile">个人履历</button>
+          <button type="button" data-home-target="research">研究方向</button>
+          <button type="button" data-home-target="interests">兴趣爱好</button>
+          <button type="button" data-home-close>回到主页背景</button>
+        </nav>
 
-          <div class="dashboard-panel research-panel" id="research" data-reveal>
-            <div class="panel-heading">
-              <p class="eyebrow">Research</p>
-              <h3>研究方向</h3>
-            </div>
-            <div class="research-grid">
-              <a class="research-card" href="./agn.html" data-reveal>
-                <span class="card-index">A</span>
-                <h3>活动星系核 / 变脸活动星系核</h3>
-                <p>
-                  关注超大质量黑洞吸积、统一模型、宽窄线区与多波段观测，以及谱型和辐射状态发生显著变化的变脸活动星系核。
-                </p>
-              </a>
-              <a class="research-card" href="./time-domain.html" data-reveal>
-                <span class="card-index">B</span>
-                <h3>时域天文学 / 数据处理</h3>
-                <p>
-                  面向随时间变化的天体信号，理解巡天数据处理、瞬变源识别与多信使跟踪中的科学问题和技术链条。
-                </p>
-              </a>
-            </div>
+        <article class="home-panel" id="profile" data-home-panel="profile">
+          <div class="panel-heading">
+            <p class="eyebrow">Profile</p>
+            <h2>个人履历</h2>
           </div>
-        </div>
-      </section>
+          <div class="timeline">
+            <article class="timeline-item">
+              <time>2018.9 ~ 2023.6</time>
+              <div>
+                <h3 class="affiliation-list">
+                  <a href="https://www.ucas.ac.cn/" target="_blank" rel="noreferrer">中国科学院大学</a>
+                  <a href="https://astro.ucas.ac.cn/index.php/cn/" target="_blank" rel="noreferrer">天文与空间科学学院</a>
+                </h3>
+                <p>天文学学士</p>
+              </div>
+            </article>
+            <article class="timeline-item">
+              <time>2023.6 ~ 至今</time>
+              <div>
+                <h3 class="affiliation-list">
+                  <a href="https://www.ucas.ac.cn/" target="_blank" rel="noreferrer">中国科学院大学</a>
+                  <a href="https://www.nao.cas.cn/" target="_blank" rel="noreferrer">中国科学院国家天文台</a>
+                </h3>
+                <p>天体物理学硕博连读</p>
+              </div>
+            </article>
+          </div>
+        </article>
 
-      <section class="section life-section" id="life" aria-labelledby="life-title">
-        <div class="section-heading" data-reveal>
-          <p class="eyebrow">Life</p>
-          <h2 id="life-title">日常生活</h2>
-        </div>
-        <div class="life-layout" data-reveal>
-          <div class="life-copy">
-            <p>
-              生活里的观察常常会回到研究中：一次旅行、一首歌、一部剧，或者一场让人屏住呼吸的比赛，都可能成为新的问题意识。
-            </p>
+        <article class="home-panel" id="research" data-home-panel="research">
+          <div class="panel-heading">
+            <p class="eyebrow">Research</p>
+            <h2>研究方向</h2>
           </div>
-          <ul class="life-list" aria-label="生活关键词">
-            <li data-reveal>
+          <div class="research-grid">
+            <a class="research-card" href="./agn.html">
+              <span class="card-index">A</span>
+              <h3><span>活动星系核</span><span>变脸活动星系核</span></h3>
+              <p>超大质量黑洞吸积、宽窄线区、多波段观测和谱型转变。</p>
+            </a>
+            <a class="research-card" href="./time-domain.html">
+              <span class="card-index">B</span>
+              <h3><span>时域天文学</span><span>数据处理</span></h3>
+              <p>巡天数据处理、瞬变源识别、多信使跟踪和快速后随观测。</p>
+            </a>
+          </div>
+        </article>
+
+        <article class="home-panel" id="life" data-home-panel="interests">
+          <div class="panel-heading">
+            <p class="eyebrow">Interests</p>
+            <h2>兴趣爱好</h2>
+          </div>
+          <ul class="life-list" aria-label="兴趣入口">
+            <li>
               <a class="life-link" href="./travel.html">
                 <span>旅行</span>
                 <strong>旅行足迹</strong>
               </a>
             </li>
-            <li data-reveal>
+            <li>
               <a class="life-link" href="./gem.html">
                 <span>最喜欢的歌手</span>
                 <strong>邓紫棋</strong>
               </a>
             </li>
-            <li data-reveal>
+            <li>
               <a class="life-link" href="./stranger-things.html">
                 <span>最喜欢的美剧</span>
                 <strong>怪奇物语</strong>
               </a>
             </li>
-            <li data-reveal>
+            <li>
               <a class="life-link" href="./curry.html">
                 <span>最喜欢的运动员</span>
                 <strong>史蒂芬·库里</strong>
               </a>
             </li>
           </ul>
-        </div>
+        </article>
       </section>
     </main>
 
