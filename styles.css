@@ -497,12 +497,21 @@ a {
   line-height: 1.25;
 }
 
+.timeline-item h3.affiliation-list {
+  display: grid;
+  gap: 8px;
+  font-size: clamp(1.22rem, 1.75vw, 1.5rem);
+}
+
 .timeline-item h3 a {
   border-bottom: 1px solid rgba(15, 95, 98, 0.26);
   color: inherit;
+  width: fit-content;
+  max-width: 100%;
   transition:
     border-color 160ms ease,
     color 160ms ease;
+  word-break: keep-all;
 }
 
 .timeline-item h3 a:hover,
