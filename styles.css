@@ -361,49 +361,6 @@ a {
   color: #fff;
 }
 
-.home-overview {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1px;
-  background: var(--line);
-  border-bottom: 1px solid var(--line);
-}
-
-.overview-item {
-  min-height: 150px;
-  background: var(--paper);
-  padding: clamp(24px, 4vw, 38px);
-  transition:
-    background 180ms ease,
-    transform 180ms ease;
-}
-
-.overview-item:hover,
-.overview-item:focus-visible {
-  background: #fff;
-  transform: translateY(-2px);
-}
-
-.overview-item span {
-  display: block;
-  color: var(--coral);
-  font-size: 0.84rem;
-  font-weight: 850;
-}
-
-.overview-item strong {
-  display: block;
-  margin-top: 12px;
-  color: var(--teal-dark);
-  font-size: 1.35rem;
-}
-
-.overview-item p {
-  max-width: 280px;
-  margin: 8px 0 0;
-  color: var(--muted);
-}
-
 .intro-band {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1535,7 +1492,6 @@ a {
   }
 
   .intro-band,
-  .home-overview,
   .research-grid,
   .life-layout,
   .dashboard-grid,
