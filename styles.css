@@ -317,6 +317,20 @@ a {
   line-height: 1.25;
 }
 
+.timeline-item h3 a {
+  border-bottom: 1px solid rgba(15, 95, 98, 0.26);
+  color: inherit;
+  transition:
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.timeline-item h3 a:hover,
+.timeline-item h3 a:focus-visible {
+  border-color: var(--coral);
+  color: var(--teal);
+}
+
 .timeline-item p,
 .research-card p,
 .life-copy p,
