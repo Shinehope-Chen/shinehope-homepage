@@ -72,10 +72,7 @@
       className: hasPhotos ? "visited-city-marker has-photos" : "visited-city-marker"
     });
 
-    const label = hasPhotos
-      ? `${item.city}${lang === "zh" ? " · 有照片" : " · photos"}`
-      : item.city;
-    marker.bindTooltip(escapeHtml(label), {
+    marker.bindTooltip(escapeHtml(item.city), {
       permanent: false,
       direction: "top",
       offset: [0, -8],

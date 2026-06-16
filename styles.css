@@ -529,6 +529,13 @@ a {
     url("./assets/gem-stage.jpg") center / cover no-repeat;
 }
 
+.curry-hero {
+  background:
+    linear-gradient(90deg, rgba(4, 9, 18, 0.94) 0%, rgba(4, 9, 18, 0.7) 45%, rgba(4, 9, 18, 0.2) 100%),
+    linear-gradient(180deg, rgba(4, 9, 18, 0.08), rgba(4, 9, 18, 0.86)),
+    url("./assets/curry/curry-mvp-cover.jpg") center / cover no-repeat;
+}
+
 .agn-hero {
   background:
     linear-gradient(90deg, rgba(5, 8, 14, 0.95) 0%, rgba(5, 8, 14, 0.76) 45%, rgba(5, 8, 14, 0.16) 100%),
@@ -585,7 +592,9 @@ a {
 .show-copy p,
 .season-grid p,
 .reason-grid p,
-.track-grid p {
+.track-grid p,
+.actor-grid p,
+.honor-grid p {
   color: rgba(246, 242, 233, 0.72);
 }
 
@@ -602,7 +611,9 @@ a {
 
 .season-grid,
 .reason-grid,
-.track-grid {
+.track-grid,
+.actor-grid,
+.honor-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
@@ -610,7 +621,9 @@ a {
 
 .season-grid article,
 .reason-grid article,
-.track-grid article {
+.track-grid article,
+.actor-grid article,
+.honor-grid article {
   min-height: 220px;
   border: 1px solid rgba(246, 242, 233, 0.14);
   border-radius: 8px;
@@ -619,7 +632,9 @@ a {
 }
 
 .season-grid span,
-.track-grid span {
+.track-grid span,
+.actor-grid span,
+.honor-grid span {
   display: block;
   margin-bottom: 24px;
   color: #d94b41;
@@ -631,12 +646,108 @@ a {
   flex-direction: column;
 }
 
-.track-grid a {
+.track-grid article > a {
   width: max-content;
   margin-top: auto;
   padding-top: 22px;
   color: #f09b6f;
   font-weight: 850;
+}
+
+.link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 22px;
+}
+
+.track-grid .link-row a,
+.actor-grid a,
+.video-actions a {
+  display: inline-flex;
+  width: auto;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(240, 155, 111, 0.46);
+  border-radius: 999px;
+  margin-top: 0;
+  padding: 0 14px;
+  color: #f09b6f;
+  font-weight: 850;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.track-grid .link-row a:hover,
+.track-grid .link-row a:focus-visible,
+.actor-grid a:hover,
+.actor-grid a:focus-visible,
+.video-actions a:hover,
+.video-actions a:focus-visible {
+  border-color: rgba(240, 155, 111, 0.86);
+  background: rgba(240, 155, 111, 0.12);
+  transform: translateY(-1px);
+}
+
+.actor-grid h3,
+.honor-grid h3 {
+  margin: 0;
+  font-size: clamp(1.18rem, 1.8vw, 1.48rem);
+  line-height: 1.25;
+}
+
+.actor-grid a,
+.actor-grid p {
+  margin-top: 22px;
+}
+
+.honor-grid article {
+  min-height: 190px;
+}
+
+.honor-grid span {
+  color: #f2c14e;
+  font-size: 1.55rem;
+}
+
+.curry-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.curry-feature-grid figure {
+  min-height: 280px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(246, 242, 233, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.curry-feature-grid img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: #0f1622;
+}
+
+.curry-feature-grid figcaption {
+  padding: 14px 16px 18px;
+  color: rgba(246, 242, 233, 0.74);
+  font-weight: 800;
+}
+
+.video-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
 }
 
 .source-note {
@@ -1019,7 +1130,10 @@ a {
   .timeline-item,
   .season-grid,
   .reason-grid,
-  .track-grid {
+  .track-grid,
+  .actor-grid,
+  .honor-grid,
+  .curry-feature-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1086,7 +1200,9 @@ a {
 
   .season-grid article,
   .reason-grid article,
-  .track-grid article {
+  .track-grid article,
+  .actor-grid article,
+  .honor-grid article {
     min-height: auto;
   }
 
