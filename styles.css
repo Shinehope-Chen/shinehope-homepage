@@ -237,6 +237,11 @@ a {
   animation: hero-rise 760ms ease both;
 }
 
+.home-portal h1 span {
+  display: block;
+  white-space: nowrap;
+}
+
 .home-module-nav {
   display: flex;
   flex-wrap: wrap;
@@ -303,7 +308,7 @@ a {
   justify-content: center;
   gap: clamp(16px, 4vw, 44px);
   border-bottom: 1px solid var(--line);
-  padding: 24px clamp(18px, 4vw, 56px) 18px;
+  padding: 92px clamp(18px, 4vw, 56px) 18px;
   color: var(--teal-dark);
 }
 
@@ -1178,6 +1183,19 @@ a {
   flex-direction: column;
 }
 
+.observation-grid article {
+  gap: 0;
+}
+
+.observation-grid img {
+  display: block;
+  width: calc(100% + clamp(44px, 6vw, 60px));
+  aspect-ratio: 4 / 3;
+  margin: calc(clamp(22px, 3vw, 30px) * -1) calc(clamp(22px, 3vw, 30px) * -1) 22px;
+  object-fit: cover;
+  background: #111a29;
+}
+
 .track-grid article > a {
   width: max-content;
   margin-top: auto;
@@ -1332,6 +1350,54 @@ a {
   width: max-content;
   color: #f09b6f;
   font-weight: 850;
+}
+
+.unified-media {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 760px;
+}
+
+.science-case-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 32px;
+}
+
+.science-case-card {
+  overflow: hidden;
+  border: 1px solid rgba(246, 242, 233, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.science-case-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: #111a29;
+}
+
+.science-case-card > div {
+  display: flex;
+  min-height: 260px;
+  flex-direction: column;
+  padding: clamp(22px, 3vw, 30px);
+}
+
+.science-case-card h3 {
+  margin: 0 0 16px;
+  color: #f6f2e9;
+  font-size: clamp(1.22rem, 1.9vw, 1.55rem);
+}
+
+.science-case-card p {
+  color: rgba(246, 242, 233, 0.72);
+}
+
+.science-case-card .link-row a {
+  color: #f09b6f;
 }
 
 .source-note {
@@ -1769,7 +1835,7 @@ a {
   }
 
   .home-portal h1 {
-    font-size: clamp(2.7rem, 14vw, 4.8rem);
+    font-size: 2.55rem;
   }
 
   .home-module-nav {
@@ -1821,6 +1887,7 @@ a {
   .reason-grid,
   .track-grid,
   .media-grid,
+  .science-case-grid,
   .actor-grid,
   .honor-grid,
   .curry-feature-grid {
