@@ -19,9 +19,9 @@
   },
   {
     "slug": "lucas-sinclair",
-    "alt": "Caleb McLaughlin as Lucas with the Hawkins group in Stranger Things 5",
-    "file": "assets/stranger-characters/lucas-sinclair.jpg",
-    "source": "https://www.netflix.com/tudum/stranger-things"
+    "alt": "Lucas Sinclair character portrait",
+    "file": "assets/stranger-characters/lucas-sinclair.webp",
+    "source": "https://strangerthings.fandom.com/wiki/Lucas_Sinclair"
   },
   {
     "slug": "max-mayfield",
@@ -37,9 +37,9 @@
   },
   {
     "slug": "steve-harrington",
-    "alt": "Joe Keery as Steve Harrington with Robin in Stranger Things 5",
-    "file": "assets/stranger-characters/steve-harrington.jpg",
-    "source": "https://www.netflix.com/tudum/stranger-things"
+    "alt": "Steve Harrington character portrait",
+    "file": "assets/stranger-characters/steve-harrington.webp",
+    "source": "https://strangerthings.fandom.com/wiki/Steve_Harrington"
   },
   {
     "slug": "robin-buckley",
@@ -49,26 +49,26 @@
   },
   {
     "slug": "nancy-wheeler",
-    "alt": "Natalia Dyer as Nancy Wheeler with Jonathan and Steve in Stranger Things 5",
-    "file": "assets/stranger-characters/nancy-wheeler.jpg",
-    "source": "https://www.netflix.com/tudum/stranger-things"
+    "alt": "Nancy Wheeler character portrait",
+    "file": "assets/stranger-characters/nancy-wheeler.webp",
+    "source": "https://strangerthings.fandom.com/wiki/Nancy_Wheeler"
   },
   {
     "slug": "jonathan-byers",
-    "alt": "Charlie Heaton as Jonathan Byers with Nancy and Steve in Stranger Things 5",
-    "file": "assets/stranger-characters/jonathan-byers.jpg",
-    "source": "https://www.netflix.com/tudum/stranger-things"
+    "alt": "Jonathan Byers character portrait",
+    "file": "assets/stranger-characters/jonathan-byers.webp",
+    "source": "https://strangerthings.fandom.com/wiki/Jonathan_Byers"
   },
   {
     "slug": "joyce-byers",
-    "alt": "Winona Ryder as Joyce Byers with Will in Stranger Things 5",
-    "file": "assets/stranger-characters/joyce-byers.jpg",
-    "source": "https://www.netflix.com/tudum/stranger-things"
+    "alt": "Joyce Byers character portrait",
+    "file": "assets/stranger-characters/joyce-byers.webp",
+    "source": "https://strangerthings.fandom.com/wiki/Joyce_Byers"
   },
   {
     "slug": "jim-hopper",
-    "alt": "David Harbour as Jim Hopper with Eleven and Kali in Stranger Things 5",
-    "file": "assets/stranger-characters/jim-hopper.jpg",
-    "source": "https://www.netflix.com/tudum/stranger-things"
+    "alt": "Jim Hopper character portrait",
+    "file": "assets/stranger-characters/jim-hopper.webp",
+    "source": "https://strangerthings.fandom.com/wiki/Jim_Hopper"
   }
 ]
