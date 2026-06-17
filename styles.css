@@ -1095,6 +1095,11 @@ a {
   display: block;
 }
 
+.show-hero h1 .hero-title-line {
+  display: block;
+  white-space: nowrap;
+}
+
 html[lang="zh-CN"] .research-topic-page .show-hero h1 span {
   white-space: nowrap;
 }
