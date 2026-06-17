@@ -231,7 +231,7 @@ a {
 .home-portal h1 {
   margin: 0;
   font-size: clamp(3.2rem, 8vw, 7.6rem);
-  line-height: 0.95;
+  line-height: 1.08;
   letter-spacing: 0;
   text-shadow: 0 18px 70px rgba(0, 0, 0, 0.44);
   animation: hero-rise 760ms ease both;
@@ -240,6 +240,10 @@ a {
 .home-portal h1 span {
   display: block;
   white-space: nowrap;
+}
+
+.home-portal h1 span + span {
+  margin-top: 0.08em;
 }
 
 .home-module-nav {
