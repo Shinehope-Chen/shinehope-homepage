@@ -1087,6 +1087,10 @@ a {
   letter-spacing: 0;
 }
 
+.show-hero h1 span {
+  display: block;
+}
+
 .show-hero p {
   max-width: 660px;
   margin: 28px 0 0;
