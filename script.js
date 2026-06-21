@@ -4,6 +4,122 @@ if (yearNode) {
   yearNode.textContent = new Date().getFullYear();
 }
 
+const setupVisitorCounter = () => {
+  if (document.querySelector(".visitor-counter")) {
+    return;
+  }
+
+  const isChinese = document.documentElement.lang.toLowerCase().startsWith("zh");
+  const copy = isChinese
+    ? {
+        title: "站点访问",
+        views: "浏览量",
+        visitors: "访客数",
+        loading: "加载中",
+        localViews: "本设备访问",
+        unavailable: "线上统计暂不可用",
+        aria: "站点访问统计",
+      }
+    : {
+        title: "Site visits",
+        views: "Views",
+        visitors: "Visitors",
+        loading: "Loading",
+        localViews: "Local visits",
+        unavailable: "Online counter unavailable",
+        aria: "Site visit statistics",
+      };
+
+  const counter = document.createElement("aside");
+  counter.className = "visitor-counter";
+  counter.setAttribute("aria-label", copy.aria);
+  counter.innerHTML = `
+    <span class="visitor-counter__title">${copy.title}</span>
+    <span class="visitor-counter__metric">
+      <strong id="vercount_value_site_pv">${copy.loading}</strong>
+      <span data-visitor-label="views">${copy.views}</span>
+    </span>
+    <span class="visitor-counter__divider" aria-hidden="true"></span>
+    <span class="visitor-counter__metric">
+      <strong id="vercount_value_site_uv">${copy.loading}</strong>
+      <span data-visitor-label="visitors">${copy.visitors}</span>
+    </span>
+  `;
+
+  document.body.appendChild(counter);
+
+  const viewsValue = counter.querySelector("#vercount_value_site_pv");
+  const visitorsValue = counter.querySelector("#vercount_value_site_uv");
+  const viewsLabel = counter.querySelector('[data-visitor-label="views"]');
+  const visitorsLabel = counter.querySelector('[data-visitor-label="visitors"]');
+  const storageKey = "shinehope:local-visit-count";
+  let localVisits = 1;
+
+  try {
+    const currentLocalVisits = Number.parseInt(localStorage.getItem(storageKey) || "0", 10);
+    localVisits = Number.isFinite(currentLocalVisits) ? currentLocalVisits + 1 : 1;
+    localStorage.setItem(storageKey, String(localVisits));
+  } catch {
+    localVisits = 1;
+  }
+
+  const hasOnlineCount = () => {
+    const onlineValuePattern = /^\d[\d,]*$/;
+
+    return onlineValuePattern.test(viewsValue.textContent.trim())
+      && onlineValuePattern.test(visitorsValue.textContent.trim());
+  };
+
+  const syncOnlineCounterState = () => {
+    if (!hasOnlineCount()) {
+      return false;
+    }
+
+    viewsLabel.textContent = copy.views;
+    visitorsLabel.textContent = copy.visitors;
+    counter.dataset.counterState = "ready";
+    window.clearTimeout(fallbackTimer);
+    return true;
+  };
+
+  const observer = new MutationObserver(() => {
+    syncOnlineCounterState();
+  });
+
+  const fallbackTimer = window.setTimeout(() => {
+    if (syncOnlineCounterState()) {
+      return;
+    }
+
+    viewsValue.textContent = localVisits.toLocaleString(isChinese ? "zh-CN" : "en");
+    viewsLabel.textContent = copy.localViews;
+    visitorsValue.textContent = "-";
+    visitorsLabel.textContent = copy.unavailable;
+    counter.dataset.counterState = "fallback";
+  }, 8000);
+
+  observer.observe(viewsValue, { childList: true, characterData: true, subtree: true });
+  observer.observe(visitorsValue, { childList: true, characterData: true, subtree: true });
+
+  if (!document.querySelector('script[src*="vercount.one/js"]')) {
+    const vercountScript = document.createElement("script");
+    vercountScript.defer = true;
+    vercountScript.src = "https://events.vercount.one/js";
+    vercountScript.onerror = () => {
+      window.clearTimeout(fallbackTimer);
+      viewsValue.textContent = localVisits.toLocaleString(isChinese ? "zh-CN" : "en");
+      viewsLabel.textContent = copy.localViews;
+      visitorsValue.textContent = "-";
+      visitorsLabel.textContent = copy.unavailable;
+      counter.dataset.counterState = "fallback";
+      observer.disconnect();
+    };
+    document.body.appendChild(vercountScript);
+  }
+};
+
+setupVisitorCounter();
+
 const headerNode = document.querySelector(".site-header");
 
 if (headerNode) {
