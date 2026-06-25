@@ -175,6 +175,7 @@ if (homeStage) {
     "#research": "research",
     "#life": "interests",
     "#interests": "interests",
+    "#apps": "apps",
   };
 
   const openPanel = (target) => {
