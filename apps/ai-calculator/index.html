@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>人工智能计算器</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="desktop" aria-label="人工智能计算器桌面">
+      <section class="launcher" id="launcher" aria-label="人工智能计算器启动程序">
+        <header class="title-bar">
+          <div class="title-left">
+            <span class="app-icon" aria-hidden="true"></span>
+            <span>Launcher</span>
+          </div>
+          <div class="window-controls" aria-hidden="true">
+            <span>_</span>
+            <span>□</span>
+            <span>×</span>
+          </div>
+        </header>
+
+        <div class="launcher-body">
+          <div class="launcher-icon" aria-hidden="true"></div>
+          <h1>人工智能计算器</h1>
+          <button type="button" class="start-button" id="startButton">开始使用</button>
+          <p class="launcher-credit">版权所有 © Shinehope｜中科院博士生</p>
+        </div>
+      </section>
+
+      <section class="calculator" id="calculatorWindow" aria-label="人工智能计算器" hidden>
+        <header class="title-bar">
+          <div class="title-left">
+            <span class="app-icon" aria-hidden="true"></span>
+            <span>Calculator</span>
+          </div>
+          <div class="window-controls" aria-hidden="true">
+            <span>_</span>
+            <span>□</span>
+            <span>×</span>
+          </div>
+        </header>
+
+        <div class="menu-bar" aria-hidden="true">
+          <span>查看(V)</span>
+          <span>编辑(E)</span>
+          <span>帮助(H)</span>
+        </div>
+
+        <div class="body">
+          <div class="calculator-view" id="calculatorView">
+            <output id="display" class="display" aria-live="polite">0</output>
+
+            <div class="keys" aria-label="计算器按键">
+              <button type="button" data-action="clear">C</button>
+              <button type="button" data-action="backspace">←</button>
+              <button type="button" data-token="(">(</button>
+              <button type="button" data-token=")">)</button>
+
+              <button type="button" data-token="7">7</button>
+              <button type="button" data-token="8">8</button>
+              <button type="button" data-token="9">9</button>
+              <button type="button" data-token="/">/</button>
+
+              <button type="button" data-token="4">4</button>
+              <button type="button" data-token="5">5</button>
+              <button type="button" data-token="6">6</button>
+              <button type="button" data-token="*">*</button>
+
+              <button type="button" data-token="1">1</button>
+              <button type="button" data-token="2">2</button>
+              <button type="button" data-token="3">3</button>
+              <button type="button" data-token="-">-</button>
+
+              <button type="button" data-token="0">0</button>
+              <button type="button" data-token=".">.</button>
+              <button type="button" class="equals" data-action="ask">=</button>
+              <button type="button" data-token="+">+</button>
+            </div>
+          </div>
+
+          <div class="chat-view" id="chatView" hidden>
+            <div class="chat-top">
+              <button type="button" class="back-button" id="backButton" aria-label="返回计算器">←</button>
+              <div class="chat-title">
+                <span>新对话</span>
+                <small>AI 生成可能有误 请核实</small>
+              </div>
+            </div>
+
+            <div class="chat-welcome" id="chatWelcome">
+              <img
+                id="welcomeAvatar"
+                src="./doubao-avatar.png"
+                alt="豆包"
+              />
+              <strong>你好，我是 豆包</strong>
+              <span aria-hidden="true"></span>
+            </div>
+
+            <div class="messages" id="messages" aria-live="polite"></div>
+
+            <div class="chat-input">
+              <div class="typed-text" id="typedText">发消息...</div>
+              <button type="button" class="send-button" aria-label="发送">↑</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

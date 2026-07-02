@@ -1010,6 +1010,33 @@ a {
     linear-gradient(135deg, rgba(15, 95, 98, 0.12), rgba(255, 255, 255, 0.88));
 }
 
+.ai-calculator-app-card {
+  background:
+    linear-gradient(90deg, rgba(0, 128, 128, 0.14) 12px, transparent 12px) 0 0 / 24px 24px,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(238, 242, 246, 0.82));
+}
+
+.ai-calculator-app-card::after {
+  position: absolute;
+  right: 30px;
+  bottom: 28px;
+  width: 76px;
+  height: 96px;
+  border-top: 3px solid #ffffff;
+  border-left: 3px solid #ffffff;
+  border-right: 3px solid rgba(0, 0, 0, 0.48);
+  border-bottom: 3px solid rgba(0, 0, 0, 0.48);
+  background:
+    linear-gradient(#000080, #000080) 0 0 / 100% 18px no-repeat,
+    linear-gradient(#ffffff, #ffffff) 10px 30px / 56px 18px no-repeat,
+    linear-gradient(90deg, #c0c0c0 0 48%, transparent 48% 52%, #c0c0c0 52%) 10px 60px / 56px 22px no-repeat,
+    #c0c0c0;
+  box-shadow: 8px 8px 0 rgba(15, 95, 98, 0.14);
+  content: "";
+  opacity: 0.78;
+  pointer-events: none;
+}
+
 .life-list li {
   border: 1px solid var(--line);
   border-radius: 8px;
