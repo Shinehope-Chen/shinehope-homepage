@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>宇宙天体图鉴 2048</title>
+<meta name="description" content="合并天体，逐级解锁质量更大的宇宙成员。从小行星、行星和恒星，一路探索到星系与可观测宇宙。">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style-extra.css">
+</head>
+<body>
+
+<!-- 开场欢迎页 -->
+<div class="welcome" id="welcome">
+  <div class="welcome-bg">
+    <div class="wb-nebula wb-nebula--1"></div>
+    <div class="wb-nebula wb-nebula--2"></div>
+    <div class="wb-nebula wb-nebula--3"></div>
+  </div>
+  <div class="welcome-card">
+    <div class="welcome-orbits" aria-hidden="true">
+      <span class="wo wo--1"></span>
+      <span class="wo wo--2"></span>
+      <span class="wo wo--3"></span>
+      <span class="wo-core"></span>
+    </div>
+    <h1 class="welcome-title">宇宙天体图鉴 <span class="brand-num">2048</span></h1>
+    <p class="welcome-sub">合并天体，逐级解锁更大的宇宙成员</p>
+    <div class="welcome-stats">
+      <div class="ws"><strong>17</strong><span>天体等级</span></div>
+      <div class="ws"><strong>4×4</strong><span>合并棋盘</span></div>
+      <div class="ws"><strong>逐级</strong><span>收录宇宙天体</span></div>
+    </div>
+    <label class="welcome-label" for="nickname">你的称号</label>
+    <div class="welcome-input-row">
+      <input type="text" id="nickname" class="welcome-input" maxlength="12"
+             placeholder="例如：观测者" autocomplete="off" spellcheck="false">
+      <button class="btn btn--primary welcome-go" id="btn-enter">启程</button>
+    </div>
+    <p class="welcome-note" id="welcome-note">留空将使用默认称号</p>
+    <p class="welcome-tip">数据仅保存在你的浏览器本地，不会上传</p>
+    <p class="welcome-author">作者：@中科院 Shinehope</p>
+  </div>
+</div>
+
+<div class="cosmic-environment" aria-hidden="true"></div>
+
+<div id="app" class="app--hidden">
+
+  <header class="topbar">
+    <div class="brand">
+      <h1>宇宙天体图鉴 <span class="brand-num">2048</span></h1>
+      <p class="tagline"><span id="player-name">观测者</span> · 合并天体，逐级解锁质量更大的宇宙成员</p>
+    </div>
+    <div class="scores">
+      <div class="score-box">
+        <span class="score-label">得分</span>
+        <span class="score-value" id="score">0</span>
+      </div>
+      <div class="score-box">
+        <span class="score-label">最高</span>
+        <span class="score-value" id="best">0</span>
+      </div>
+      <div class="score-box score-box--sci">
+        <span class="score-label">图鉴进度</span>
+        <span class="score-value" id="collection-count">0 / 17</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <button class="btn btn--primary" id="btn-new">新游戏</button>
+    <button class="btn" id="btn-undo" title="撤销上一步">撤销</button>
+    <button class="btn" id="btn-codex">天体图鉴</button>
+    <button class="btn" id="btn-about">关于</button>
+    <button class="btn btn--clear-cache" id="btn-clear-cache" title="清除已解锁天体记录，并立即开始新游戏">清除缓存</button>
+  </div>
+
+  <main class="stage">
+
+    <section class="board-area">
+      <div class="board-wrap">
+        <div class="grid-bg" id="grid-bg"></div>
+        <div class="tile-layer" id="tile-layer"></div>
+        <div class="overlay" id="overlay" hidden>
+          <div class="overlay-inner">
+            <h2 id="overlay-title">合并之旅暂时停下</h2>
+            <p id="overlay-text"></p>
+            <div class="overlay-actions">
+              <button class="btn btn--primary" id="overlay-retry">再来一次</button>
+              <button class="btn" id="overlay-continue" hidden>继续生长</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 新天体庆祝动画层 -->
+        <div class="celebrate" id="celebrate" hidden aria-hidden="true">
+          <div class="cel-flash" id="cel-flash"></div>
+          <div class="cel-rings">
+            <span class="cel-ring cel-ring--1"></span>
+            <span class="cel-ring cel-ring--2"></span>
+            <span class="cel-ring cel-ring--3"></span>
+          </div>
+          <div class="cel-particles" id="cel-particles"></div>
+          <div class="cel-banner" id="cel-banner">
+            <span class="cel-kicker" id="cel-kicker">新天体解锁</span>
+            <span class="cel-name" id="cel-name"></span>
+            <span class="cel-exp" id="cel-exp"></span>
+          </div>
+        </div>
+      </div>
+      <p class="hint">方向键 / WASD 滑动 · 手机直接在棋盘上滑</p>
+    </section>
+
+    <aside class="scale-panel" aria-label="天体质量尺度">
+      <div class="scale-head">
+        <span class="scale-title">天体质量尺度</span>
+        <span class="scale-unit">以 10 的幂为刻度（kg）</span>
+      </div>
+      <div class="scale-track" id="scale-track">
+        <div class="scale-fill" id="scale-fill"></div>
+        <div class="scale-marker" id="scale-marker">
+          <span class="scale-marker-dot"></span>
+        </div>
+        <div class="scale-ticks" id="scale-ticks"></div>
+      </div>
+      <div class="scale-readout">
+        <div class="readout-row">
+          <span class="readout-key">当前最高</span>
+          <span class="readout-val" id="readout-name">—</span>
+        </div>
+        <div class="readout-row">
+          <span class="readout-key">质量</span>
+          <span class="readout-val readout-val--mono" id="readout-mass">—</span>
+        </div>
+      </div>
+
+      <div class="next-target" id="next-target">
+          <span class="next-label">待解锁天体</span>
+        <div class="next-row">
+          <div class="next-orb" id="next-orb"></div>
+          <div class="next-info">
+            <span class="next-name" id="next-name">—</span>
+            <span class="next-mass" id="next-mass">—</span>
+          </div>
+        </div>
+        <p class="next-gate" id="next-gate"></p>
+      </div>
+    </aside>
+
+  </main>
+
+  <footer class="footnote">
+    <p><strong>游戏说明：</strong>通过合并同级天体，逐步解锁质量更大的天体与宇宙结构。本作将真实天体作为图鉴内容，不模拟实际碰撞、演化或质量守恒。图鉴中的质量数值用于科普参考。天体贴图由 AI 生成，非真实观测照片。详见「关于」。</p>
+    <p class="author-credit">作者：@中科院 Shinehope</p>
+  </footer>
+
+</div>
+
+<!-- 科普卡 -->
+<div class="modal" id="fact-modal" hidden>
+  <div class="modal-card fact-card" role="dialog" aria-modal="true">
+    <div class="fact-visual">
+      <div class="fact-orb" id="fact-orb"></div>
+    </div>
+    <div class="fact-body">
+      <span class="fact-badge" id="fact-badge">新天体解锁</span>
+      <h3 class="fact-name" id="fact-name"></h3>
+      <p class="fact-rep" id="fact-rep"></p>
+      <div class="fact-stats" id="fact-stats"></div>
+      <h4 class="fact-title" id="fact-title"></h4>
+      <p class="fact-text" id="fact-text"></p>
+      <p class="fact-physics" id="fact-physics"></p>
+      <button class="btn btn--primary btn--block" id="fact-close">继续</button>
+    </div>
+  </div>
+</div>
+
+<!-- 图鉴 -->
+<div class="modal" id="codex-modal" hidden>
+  <div class="modal-card codex-card" role="dialog" aria-modal="true">
+    <div class="codex-head">
+      <h3>天体图鉴</h3>
+      <span class="codex-progress" id="codex-progress">0 / 11</span>
+      <button class="modal-x" id="codex-close" aria-label="关闭">×</button>
+    </div>
+    <p class="codex-sub">按质量升序排列。灰色条目尚未解锁。</p>
+    <div class="codex-list" id="codex-list"></div>
+  </div>
+</div>
+
+<!-- 关于 -->
+<div class="modal" id="about-modal" hidden>
+  <div class="modal-card about-card" role="dialog" aria-modal="true">
+    <div class="codex-head">
+      <h3>关于这个游戏</h3>
+      <button class="modal-x" id="about-close" aria-label="关闭">×</button>
+    </div>
+    <div class="about-body" id="about-body"></div>
+  </div>
+</div>
+
+<script src="data/bodies.inline.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

@@ -931,7 +931,7 @@ a {
 
 .apps-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
 }
 
@@ -1035,6 +1035,33 @@ a {
   content: "";
   opacity: 0.78;
   pointer-events: none;
+}
+
+.cosmic-game-app-card {
+  border-color: rgba(112, 154, 220, 0.32);
+  background-image:
+    linear-gradient(110deg, rgba(3, 8, 20, 0.86), rgba(3, 8, 20, 0.22)),
+    url("./apps/cosmic-2048/assets/welcome-celestial-panorama.png");
+  background-position: center, 34% center;
+  background-size: cover;
+}
+
+.cosmic-game-app-card::before {
+  border-color: rgba(185, 205, 255, 0.24);
+}
+
+.cosmic-game-app-card h3 {
+  color: #fff;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.65);
+}
+
+.cosmic-game-app-card p {
+  color: rgba(236, 241, 255, 0.8);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.65);
+}
+
+.cosmic-game-app-card > strong {
+  color: #ffe08a;
 }
 
 .life-list li {
