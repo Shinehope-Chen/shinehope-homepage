@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>宇宙天体图鉴 2048</title>
 <meta name="description" content="合并天体，逐级解锁质量更大的宇宙成员。从小行星、行星和恒星，一路探索到星系与可观测宇宙。">
 <link rel="stylesheet" href="style.css">
@@ -50,7 +50,7 @@
   <header class="topbar">
     <div class="brand">
       <h1>宇宙天体图鉴 <span class="brand-num">2048</span></h1>
-      <p class="tagline"><span id="player-name">观测者</span> · 合并天体，逐级解锁质量更大的宇宙成员</p>
+      <p class="tagline"><span id="player-name">观测者</span> · <span class="tagline-copy-desktop">合并天体，逐级解锁质量更大的宇宙成员</span><span class="tagline-copy-mobile">合并天体，逐级探索宇宙天体</span></p>
     </div>
     <div class="scores">
       <div class="score-box">
@@ -109,7 +109,7 @@
           </div>
         </div>
       </div>
-      <p class="hint">方向键 / WASD 滑动 · 手机直接在棋盘上滑</p>
+      <p class="hint"><span class="hint-desktop">方向键 / WASD 滑动</span><span class="hint-separator"> · </span><span class="hint-mobile">在棋盘上滑动，合并同级天体</span></p>
     </section>
 
     <aside class="scale-panel" aria-label="天体质量尺度">
