@@ -501,6 +501,20 @@
   /* ---------- 开场欢迎页 ---------- */
 
   var NAME_KEY = 'mass-ladder-2048/player';
+  var GUIDE_KEY = 'mass-ladder-2048/guide-seen';
+
+  function hasSeenGuide() {
+    try { return localStorage.getItem(GUIDE_KEY) === '1'; } catch (e) { return false; }
+  }
+
+  function openGuide() {
+    $('guide-modal').hidden = false;
+    try { localStorage.setItem(GUIDE_KEY, '1'); } catch (e) { /* 隐私模式忽略 */ }
+  }
+
+  function closeGuide() {
+    $('guide-modal').hidden = true;
+  }
 
   function loadName() {
     try { return localStorage.getItem(NAME_KEY) || ''; } catch (e) { return ''; }
@@ -527,6 +541,7 @@
     app.classList.remove('app--hidden');
     app.classList.add('app--in');
     setTimeout(function () { w.hidden = true; }, 600);
+    if (!hasSeenGuide()) openGuide();
   }
 
   function initWelcome() {
@@ -893,11 +908,12 @@
 
   function bindInput() {
     document.addEventListener('keydown', function (e) {
-      if (!$('fact-modal').hidden || !$('codex-modal').hidden || !$('about-modal').hidden) {
+      if (!$('fact-modal').hidden || !$('guide-modal').hidden || !$('codex-modal').hidden || !$('about-modal').hidden) {
         if (e.key === 'Escape') {
-          closeFact();
-          $('codex-modal').hidden = true;
-          $('about-modal').hidden = true;
+          if (!$('fact-modal').hidden) closeFact();
+          else if (!$('guide-modal').hidden) closeGuide();
+          else if (!$('codex-modal').hidden) $('codex-modal').hidden = true;
+          else if (!$('about-modal').hidden) $('about-modal').hidden = true;
         }
         return;
       }
@@ -937,6 +953,9 @@
     $('btn-new').addEventListener('click', newGame);
     $('btn-undo').addEventListener('click', undo);
     $('btn-clear-cache').addEventListener('click', clearUnlockCache);
+    $('btn-guide').addEventListener('click', openGuide);
+    $('guide-close').addEventListener('click', closeGuide);
+    $('guide-start').addEventListener('click', closeGuide);
 
     $('btn-codex').addEventListener('click', function () {
       renderCodex();
@@ -963,7 +982,7 @@
     });
 
     // 点遮罩关闭
-    ['codex-modal', 'about-modal'].forEach(function (id) {
+    ['guide-modal', 'codex-modal', 'about-modal'].forEach(function (id) {
       $(id).addEventListener('click', function (e) {
         if (e.target === this) this.hidden = true;
       });

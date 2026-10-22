@@ -71,6 +71,7 @@
   <div class="toolbar">
     <button class="btn btn--primary" id="btn-new">新游戏</button>
     <button class="btn" id="btn-undo" title="撤销上一步">撤销</button>
+    <button class="btn" id="btn-guide">游戏指南</button>
     <button class="btn" id="btn-codex">天体图鉴</button>
     <button class="btn" id="btn-about">关于</button>
     <button class="btn btn--clear-cache" id="btn-clear-cache" title="清除已解锁天体记录，并立即开始新游戏">清除缓存</button>
@@ -155,6 +156,61 @@
     <p class="author-credit">作者：@中科院 Shinehope</p>
   </footer>
 
+</div>
+
+<!-- 游戏指南 -->
+<div class="modal" id="guide-modal" hidden>
+  <div class="modal-card guide-card" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+    <div class="codex-head guide-head">
+      <div>
+        <span class="guide-kicker">COSMIC FIELD GUIDE</span>
+        <h3 id="guide-title">宇宙天体图鉴 · 游戏指南</h3>
+      </div>
+      <button class="modal-x" id="guide-close" aria-label="关闭指南">×</button>
+    </div>
+    <p class="guide-intro">从一颗小行星开始，在每一次合并中认识更宏大的宇宙。</p>
+
+    <div class="guide-grid">
+      <section class="guide-section">
+        <span class="guide-number">01</span>
+        <div>
+          <h4>合并与探索</h4>
+          <p>把两个相同等级的天体合并，得到更高一级的天体。继续合并，逐步探索完整的 17 级宇宙图鉴。</p>
+        </div>
+      </section>
+      <section class="guide-section">
+        <span class="guide-number">02</span>
+        <div>
+          <h4>移动棋盘</h4>
+          <p>电脑上使用方向键或 WASD；手机上在棋盘内向上、下、左、右滑动。每次移动后会出现新的天体。</p>
+        </div>
+      </section>
+      <section class="guide-section">
+        <span class="guide-number">03</span>
+        <div>
+          <h4>查看进度</h4>
+          <p>右侧尺度显示当前最高天体和下一目标；打开「天体图鉴」可以查看已发现的天体、代表对象和科普资料。</p>
+        </div>
+      </section>
+      <section class="guide-section">
+        <span class="guide-number">04</span>
+        <div>
+          <h4>管理游戏</h4>
+          <p>「撤销」回退上一步，「新游戏」重新开始。清除缓存会重置已解锁记录，让之后的新发现动画和介绍再次出现；最高分与称号会保留。</p>
+        </div>
+      </section>
+      <section class="guide-section guide-section--wide">
+        <span class="guide-number">05</span>
+        <div>
+          <h4>关于天体数据</h4>
+          <p>质量数值是天文资料的科普参考。合并是游戏规则，不代表真实天体碰撞、演化或质量守恒；天体图像由 AI 生成，并非真实观测照片。</p>
+        </div>
+      </section>
+    </div>
+
+    <button class="btn btn--primary btn--block guide-start" id="guide-start">开始探索</button>
+    <p class="guide-author">作者：@中科院 Shinehope</p>
+  </div>
 </div>
 
 <!-- 科普卡 -->
