@@ -474,6 +474,13 @@
   margin-top: 5px;
 }
 
+.cel-exp sup {
+  margin-left: .03em;
+  font-size: .72em;
+  line-height: 0;
+  vertical-align: super;
+}
+
 /* 终极解锁（第 17 级）加强版 */
 .celebrate--final .cel-banner {
   padding: 20px 38px;

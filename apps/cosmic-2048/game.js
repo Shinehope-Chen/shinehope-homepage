@@ -609,7 +609,15 @@
 
     $('cel-kicker').textContent = isFinal ? '标尺尽头 · 2¹⁷ 达成' : '新天体解锁 · 第 ' + lv + ' 级';
     $('cel-name').textContent = b.name;
-    $('cel-exp').innerHTML = '<i>10</i><b>' + b.display_exp + '</b> kg · ' + b.representative;
+    var exp = $('cel-exp');
+    exp.innerHTML = '';
+    var expBase = document.createElement('span');
+    expBase.textContent = '10';
+    var expPower = document.createElement('sup');
+    expPower.textContent = b.display_exp != null ? b.display_exp : Math.round(b.log_mass);
+    exp.appendChild(expBase);
+    exp.appendChild(expPower);
+    exp.appendChild(document.createTextNode(' kg · ' + b.representative));
 
     // 生成粒子
     var wrap = $('cel-particles');
