@@ -615,6 +615,9 @@
     expBase.textContent = '10';
     var expPower = document.createElement('sup');
     expPower.textContent = b.display_exp != null ? b.display_exp : Math.round(b.log_mass);
+    expPower.style.fontSize = '.72em';
+    expPower.style.lineHeight = '0';
+    expPower.style.verticalAlign = 'super';
     exp.appendChild(expBase);
     exp.appendChild(expPower);
     exp.appendChild(document.createTextNode(' kg · ' + b.representative));
