@@ -1183,3 +1183,38 @@ body {
   .guide-start { margin-top: 11px; }
 }
 
+/* 手机棋盘：图片只占一个球体尺寸，避免原图撑满格子后把文字挤出卡片。 */
+.tile > .orb--img {
+  width: min(56%, 108px);
+  height: auto;
+  aspect-ratio: 1 / 1;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+@media (max-width: 560px) {
+  .board-wrap {
+    background: linear-gradient(180deg, rgba(12,18,34,.86), rgba(9,14,27,.84));
+  }
+
+  .tile {
+    gap: 3px;
+    background: linear-gradient(180deg, rgba(31,42,65,.78), rgba(18,26,44,.76));
+  }
+
+  .tile-exp { display: none; }
+
+  .tile > .orb--img { width: 72%; }
+
+  .tile-label {
+    max-width: 100%;
+    padding: 0 3px;
+    font-size: clamp(.46rem, 2.7vw, .68rem);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body::after { opacity: .42; }
+}
+
