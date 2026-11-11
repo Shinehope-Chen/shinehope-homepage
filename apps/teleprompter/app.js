@@ -4,7 +4,7 @@
   const initialData = {
     scripts: [{ id: 'sample-universe', title: '宇宙与我们', text: sampleText }],
     selectedId: 'sample-universe',
-    settings: { fontSize: 48, speed: 32, mirrored: false, countdown: true, countdownSeconds: 3 }
+    settings: { fontSize: 48, speed: 32, mirrored: false, countdown: true, countdownSeconds: 3, textColor: '#f0efed', lineHeight: 180, sideMargin: 6 }
   };
 
   const $ = (selector) => document.querySelector(selector);
@@ -16,6 +16,9 @@
     speedUpButton: $('#speedUpButton'), speedDownButton: $('#speedDownButton'),
     countdownSelect: $('#countdownSelect'), countdownLayer: $('#countdownLayer'), countdownNumber: $('#countdownNumber'),
     progressSlider: $('#progressSlider'), progressValue: $('#progressValue'), emptyState: $('#emptyState'),
+    lineHeightRange: $('#lineHeightRange'), lineHeightValue: $('#lineHeightValue'), sideMarginRange: $('#sideMarginRange'), sideMarginValue: $('#sideMarginValue'),
+    textColorOptions: $('#textColorOptions'), presentationToolbar: $('#presentationToolbar'), presentationSpeedValue: $('#presentationSpeedValue'),
+    presentationFontValue: $('#presentationFontValue'), presentationPlayButton: $('#presentationPlayButton'),
     editorDialog: $('#editorDialog'), editorForm: $('#editorForm'), editorTitle: $('#editorTitle'), titleInput: $('#scriptTitleInput'),
     presentationExitButton: $('#presentationExitButton'),
     textInput: $('#scriptTextInput'), characterCount: $('#characterCount'), saveStatus: $('#saveStatus'), toast: $('#toast')
@@ -32,6 +35,8 @@
   let editingId = null;
   let newScriptMode = false;
   let lastSaved = 0;
+  let wakeLock = null;
+  let wakeLockRequest = null;
 
   function loadData() {
     try {
@@ -124,13 +129,27 @@
   }
 
   function applySettings() {
-    const { fontSize, speed, mirrored, countdown, countdownSeconds } = data.settings;
+    const { fontSize, speed, mirrored, countdown, countdownSeconds, textColor, lineHeight, sideMargin } = data.settings;
     elements.fontSizeValue.textContent = String(fontSize);
     elements.fontSizeRange.value = String(fontSize);
     elements.scriptContent.style.fontSize = `${fontSize}px`;
     document.documentElement.style.setProperty('--present-font-size', `${fontSize}px`);
     elements.speedRange.value = String(speed);
     elements.speedName.textContent = `${speed} px/秒`;
+    elements.presentationSpeedValue.textContent = `${speed} px/秒`;
+    elements.presentationFontValue.textContent = String(fontSize);
+    elements.lineHeightRange.value = String(lineHeight);
+    elements.lineHeightValue.textContent = `${lineHeight}%`;
+    elements.sideMarginRange.value = String(sideMargin);
+    elements.sideMarginValue.textContent = `${sideMargin}%`;
+    elements.scriptContent.style.color = textColor;
+    elements.scriptContent.style.lineHeight = String(Number(lineHeight) / 100);
+    elements.scriptContent.style.width = `min(${100 - Number(sideMargin) * 2}%, 890px)`;
+    elements.textColorOptions.querySelectorAll('.color-option').forEach((button) => {
+      const selected = button.dataset.color === textColor;
+      button.classList.toggle('is-selected', selected);
+      button.setAttribute('aria-pressed', String(selected));
+    });
     elements.mirrorToggle.classList.toggle('is-on', mirrored);
     elements.mirrorToggle.setAttribute('aria-checked', String(mirrored));
     app.classList.toggle('is-mirrored', mirrored);
@@ -184,6 +203,38 @@
       : '<svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg><span>开始提词</span>';
     elements.readyLabel.classList.toggle('is-playing', value);
     elements.readyLabel.lastElementChild.textContent = value ? '正在提词' : '准备就绪';
+    syncPresentationPlayButton();
+    syncWakeLock();
+  }
+
+  function syncPresentationPlayButton() {
+    const isCancellingCountdown = Boolean(countdownTimer) && !isPlaying;
+    const shouldPause = isPlaying || isCancellingCountdown;
+    elements.presentationPlayButton.setAttribute('aria-label', isCancellingCountdown ? '取消倒计时' : shouldPause ? '暂停提词' : '开始提词');
+    elements.presentationPlayButton.innerHTML = isCancellingCountdown
+      ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>'
+      : shouldPause
+        ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM15 5h4v14h-4z"/></svg>'
+        : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>';
+  }
+
+  async function syncWakeLock() {
+    if (!('wakeLock' in navigator)) return;
+    if (!isPlaying || document.visibilityState !== 'visible') {
+      if (wakeLock) { await wakeLock.release().catch(() => {}); wakeLock = null; }
+      return;
+    }
+    if (wakeLock || wakeLockRequest) return;
+    wakeLockRequest = navigator.wakeLock.request('screen').then((lock) => {
+      if (!isPlaying || document.visibilityState !== 'visible') {
+        void lock.release().catch(() => {});
+        return;
+      }
+      wakeLock = lock;
+      lock.addEventListener('release', () => { if (wakeLock === lock) wakeLock = null; });
+    }).catch(() => { /* Screen Wake Lock is optional and browser-dependent. */ })
+      .finally(() => { wakeLockRequest = null; });
+    await wakeLockRequest;
   }
 
   function startPlayback() {
@@ -201,6 +252,7 @@
     elements.startButton.innerHTML = '<svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg><span>取消倒计时</span>';
     elements.countdownNumber.textContent = String(remaining);
     elements.countdownLayer.hidden = false;
+    syncPresentationPlayButton();
     countdownTimer = setInterval(() => {
       remaining -= 1;
       if (remaining <= 0) {
@@ -261,6 +313,8 @@
       isPresenting = true;
       app.classList.add('is-presenting');
       elements.presentationExitButton.hidden = false;
+      elements.presentationToolbar.hidden = false;
+      syncPresentationPlayButton();
       if (!document.fullscreenElement && app.requestFullscreen) {
         try { await app.requestFullscreen(); } catch { showToast('浏览器未允许全屏，请按 F11'); }
       }
@@ -269,6 +323,7 @@
       isPresenting = false;
       app.classList.remove('is-presenting');
       elements.presentationExitButton.hidden = true;
+      elements.presentationToolbar.hidden = true;
       if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
       if (isPlaying || countdownTimer) stopPlayback();
     }
@@ -425,7 +480,13 @@
   }
 
   function adjustSpeed(step) {
-    data.settings.speed = Math.max(5, Math.min(80, Number(data.settings.speed) + step));
+    data.settings.speed = Math.max(1, Math.min(240, Number(data.settings.speed) + step));
+    applySettings();
+    saveData();
+  }
+
+  function adjustFont(step) {
+    data.settings.fontSize = Math.max(28, Math.min(96, Number(data.settings.fontSize) + step));
     applySettings();
     saveData();
   }
@@ -438,6 +499,11 @@
   elements.presentationExitButton.addEventListener('click', togglePresentation);
   elements.speedUpButton.addEventListener('click', () => adjustSpeed(3));
   elements.speedDownButton.addEventListener('click', () => adjustSpeed(-3));
+  $('#presentationSpeedUp').addEventListener('click', () => adjustSpeed(5));
+  $('#presentationSpeedDown').addEventListener('click', () => adjustSpeed(-5));
+  $('#presentationFontUp').addEventListener('click', () => adjustFont(2));
+  $('#presentationFontDown').addEventListener('click', () => adjustFont(-2));
+  elements.presentationPlayButton.addEventListener('click', startPlayback);
   $('#mobileLibraryButton').addEventListener('click', () => openMobileDrawer('library'));
   $('#mobileSettingsButton').addEventListener('click', () => openMobileDrawer('settings'));
   $('#drawerBackdrop').addEventListener('click', closeMobileDrawers);
@@ -448,12 +514,10 @@
     event.target.value = '';
   });
   $('#fontDown').addEventListener('click', () => {
-    data.settings.fontSize = Math.max(28, Number(data.settings.fontSize) - 2);
-    applySettings(); saveData();
+    adjustFont(-2);
   });
   $('#fontUp').addEventListener('click', () => {
-    data.settings.fontSize = Math.min(76, Number(data.settings.fontSize) + 2);
-    applySettings(); saveData();
+    adjustFont(2);
   });
   elements.fontSizeRange.addEventListener('input', (event) => {
     data.settings.fontSize = Number(event.target.value);
@@ -465,6 +529,23 @@
     applySettings();
   });
   elements.speedRange.addEventListener('change', saveData);
+  elements.lineHeightRange.addEventListener('input', (event) => {
+    data.settings.lineHeight = Number(event.target.value);
+    applySettings();
+  });
+  elements.lineHeightRange.addEventListener('change', saveData);
+  elements.sideMarginRange.addEventListener('input', (event) => {
+    data.settings.sideMargin = Number(event.target.value);
+    applySettings();
+  });
+  elements.sideMarginRange.addEventListener('change', saveData);
+  elements.textColorOptions.addEventListener('click', (event) => {
+    const button = event.target.closest('.color-option');
+    if (!button) return;
+    data.settings.textColor = button.dataset.color;
+    applySettings();
+    saveData();
+  });
   elements.mirrorToggle.addEventListener('click', () => {
     data.settings.mirrored = !data.settings.mirrored;
     applySettings(); saveData();
@@ -521,6 +602,8 @@
     if (event.code === 'Space' && !(target instanceof HTMLElement && target.closest('button, a'))) { event.preventDefault(); startPlayback(); }
     if (event.code === 'ArrowUp') { event.preventDefault(); adjustSpeed(3); }
     if (event.code === 'ArrowDown') { event.preventDefault(); adjustSpeed(-3); }
+    if (event.key === '+' || event.key === '=') { event.preventDefault(); adjustFont(2); }
+    if (event.key === '-' || event.key === '_') { event.preventDefault(); adjustFont(-2); }
     if (event.key.toLowerCase() === 'f') { event.preventDefault(); togglePresentation(); }
   });
   document.addEventListener('fullscreenchange', () => {
@@ -528,9 +611,11 @@
       isPresenting = false;
       app.classList.remove('is-presenting');
       elements.presentationExitButton.hidden = true;
+      elements.presentationToolbar.hidden = true;
       if (isPlaying || countdownTimer) stopPlayback();
     }
   });
+  document.addEventListener('visibilitychange', () => { if (isPlaying) syncWakeLock(); });
   syncAppViewportHeight();
   window.addEventListener('resize', () => { syncAppViewportHeight(); updateProgress(); }, { passive: true });
   window.visualViewport?.addEventListener('resize', () => { syncAppViewportHeight(); updateProgress(); }, { passive: true });
@@ -538,6 +623,7 @@
   renderScripts();
   renderScript();
   applySettings();
+  syncPresentationPlayButton();
   try {
     if (!lastSaved && !localStorage.getItem(STORAGE_KEY)) saveData();
   } catch {

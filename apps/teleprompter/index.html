@@ -92,18 +92,32 @@
               <output id="fontSizeValue">48</output>
               <button class="step-button" id="fontUp" aria-label="增大字号">＋</button>
             </div>
-            <input class="visually-hidden" type="range" id="fontSizeRange" min="28" max="76" value="48" aria-label="文字大小" />
+            <input class="visually-hidden" type="range" id="fontSizeRange" min="28" max="96" value="48" aria-label="文字大小" />
           </section>
           <section class="setting-section speed-setting">
             <div class="setting-label">滚动速度</div>
-            <div class="speed-control"><input id="speedRange" type="range" min="5" max="80" value="32" aria-label="滚动速度，单位像素每秒" /><output class="speed-name" id="speedName">32 px/秒</output></div>
+            <div class="speed-control"><input id="speedRange" type="range" min="1" max="240" step="1" value="32" aria-label="滚动速度，单位像素每秒" /><output class="speed-name" id="speedName">32 px/秒</output></div>
+          </section>
+          <section class="setting-section reading-settings">
+            <div class="setting-label">文字显示</div>
+            <div class="setting-control-row">
+              <span>字体颜色</span>
+              <div class="text-color-options" id="textColorOptions" role="group" aria-label="字体颜色">
+                <button type="button" class="color-option" data-color="#f0efed" aria-label="柔白" title="柔白"></button>
+                <button type="button" class="color-option" data-color="#ffe4bf" aria-label="米杏" title="米杏"></button>
+                <button type="button" class="color-option" data-color="#bfe5d0" aria-label="薄荷" title="薄荷"></button>
+                <button type="button" class="color-option" data-color="#ffe48c" aria-label="暖黄" title="暖黄"></button>
+              </div>
+            </div>
+            <label class="range-setting" for="lineHeightRange"><span>行距</span><output id="lineHeightValue">180%</output><input id="lineHeightRange" type="range" min="130" max="220" step="5" value="180" aria-label="行距" /></label>
+            <label class="range-setting" for="sideMarginRange"><span>左右留白</span><output id="sideMarginValue">6%</output><input id="sideMarginRange" type="range" min="0" max="20" step="1" value="6" aria-label="左右留白" /></label>
           </section>
           <section class="setting-section toggle-section">
             <div class="toggle-row"><span>镜像翻转</span><button class="switch" id="mirrorToggle" role="switch" aria-checked="false" aria-label="镜像翻转"><i></i></button></div>
           </section>
           <section class="setting-section countdown-setting">
             <div class="toggle-row"><span>倒计时</span><button class="switch is-on" id="countdownToggle" role="switch" aria-checked="true" aria-label="倒计时"><i></i></button></div>
-            <select id="countdownSelect" aria-label="倒计时秒数"><option value="3">3 秒</option><option value="5">5 秒</option><option value="10">10 秒</option></select>
+            <select id="countdownSelect" aria-label="倒计时秒数"><option value="3">3 秒</option><option value="5">5 秒</option><option value="10">10 秒</option><option value="15">15 秒</option></select>
           </section>
           <div class="settings-footer"><span class="keyboard-icon">⌘</span><span>按 <kbd>F</kbd> 切换全屏</span></div>
         </aside>
@@ -122,6 +136,19 @@
       <button id="presentationExitButton" class="presentation-exit" type="button" aria-label="退出专注显示" title="退出专注显示" hidden>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
       </button>
+      <div class="presentation-toolbar" id="presentationToolbar" aria-label="提词控制" hidden>
+        <button class="presentation-control" id="presentationSpeedDown" type="button" aria-label="降低滚动速度" title="降低滚动速度（每次 5 像素/秒）">−</button>
+        <output class="presentation-readout" id="presentationSpeedValue">32 px/秒</output>
+        <span class="presentation-divider" aria-hidden="true"></span>
+        <button class="presentation-control" id="presentationFontDown" type="button" aria-label="减小字号" title="减小字号">A−</button>
+        <output class="presentation-readout" id="presentationFontValue">48</output>
+        <button class="presentation-control" id="presentationFontUp" type="button" aria-label="增大字号" title="增大字号">A+</button>
+        <span class="presentation-divider" aria-hidden="true"></span>
+        <button class="presentation-control presentation-play" id="presentationPlayButton" type="button" aria-label="开始提词" title="开始 / 暂停提词">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
+        </button>
+        <button class="presentation-control" id="presentationSpeedUp" type="button" aria-label="增加滚动速度" title="增加滚动速度（每次 5 像素/秒）">+</button>
+      </div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>
     <script src="./vendor/fflate-0.8.2.js"></script>
