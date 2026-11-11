@@ -79,6 +79,10 @@ button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .ready-label.is-playing .status-dot { background: var(--accent); box-shadow: 0 0 10px #f28c5566; animation: breathe 1.6s ease-in-out infinite; }
 @keyframes breathe { 50% { box-shadow: 0 0 2px #f28c5555; } }
 .stage-tools { display: flex; align-items: center; gap: 10px; }
+.feature-button { width: 34px; height: 34px; }
+.feature-button svg { width: 18px; height: 18px; }
+.feature-button.is-active { color: #fff; background: #503528; box-shadow: inset 0 0 0 1px #a45c3c; }
+.feature-button[aria-pressed="true"] { color: #ffab7d; background: #382720; }
 .text-button { display: flex; align-items: center; gap: 7px; padding: 8px 10px; color: #90949b; border: 0; border-radius: 6px; background: transparent; font-size: 12px; cursor: pointer; }
 .text-button:hover { color: #f4f2ee; background: #23262b; }
 .text-button svg { width: 16px; height: 16px; }
@@ -164,6 +168,39 @@ input[type="range"]::-moz-range-thumb { width: 10px; height: 10px; border-radius
 
 .editor-dialog { width: min(640px, calc(100vw - 28px)); max-height: min(800px, calc(var(--app-viewport-height, 100dvh) - 32px)); padding: 0; overflow: hidden; border: 1px solid #42464d; border-radius: 13px; background: #202327; color: var(--text); box-shadow: 0 24px 80px #0009; }
 .editor-dialog::backdrop { background: #08090bb8; backdrop-filter: blur(3px); }
+.recording-dialog { width: min(860px, calc(100vw - 28px)); max-height: min(900px, calc(var(--app-viewport-height, 100dvh) - 28px)); padding: 0; overflow-y: auto; border: 1px solid #42464d; border-radius: 14px; background: #202327; color: var(--text); box-shadow: 0 24px 80px #0009; }
+.recording-dialog::backdrop { background: #08090bd8; backdrop-filter: blur(3px); }
+.recording-panel { display: flex; flex-direction: column; gap: 18px; padding: 22px; }
+.recording-heading { display: flex; align-items: flex-start; justify-content: space-between; }
+.recording-heading h2 { margin: 0 0 6px; font-size: 20px; font-weight: 600; }
+.recording-heading p { margin: 0; color: #858a91; font-size: 12px; }
+.recording-heading .dialog-close { flex: 0 0 44px; margin: -5px -6px 0 0; }
+.camera-frame { position: relative; width: 100%; max-height: 60vh; aspect-ratio: 16 / 9; overflow: hidden; border: 1px solid #41464d; border-radius: 10px; background: #08090b; }
+.camera-frame.is-portrait { width: auto; height: min(58vh, 620px); max-width: 100%; aspect-ratio: 9 / 16; align-self: center; }
+.camera-frame video { width: 100%; height: 100%; display: block; object-fit: cover; }
+.camera-script-window { position: absolute; top: 0; left: 0; right: 0; height: 48%; overflow: hidden; padding: 0 16px; background: linear-gradient(180deg, #101214e8 0%, #101214a8 80%, #10121400 100%); color: var(--record-text-color, #f0efed); text-align: center; }
+.camera-script-content { padding: 24px 8px 20px; font-size: clamp(17px, 3.4vh, 34px); font-weight: 600; line-height: var(--record-line-height, 1.8); letter-spacing: .015em; text-shadow: 0 1px 4px #000; }
+.camera-script-content p { margin: 0 0 .7em; }
+.camera-reading-guide { position: absolute; left: 8px; right: 8px; top: 33%; height: 1px; background: #f28c55cc; box-shadow: 0 0 7px #f28c5577; pointer-events: none; }
+.recording-indicator { position: absolute; top: 12px; right: 12px; display: flex; align-items: center; gap: 7px; padding: 6px 9px; border: 1px solid #ffffff30; border-radius: 20px; background: #101214bb; color: #fff; font-family: "DM Mono", monospace; font-size: 11px; }
+.recording-indicator i, .record-start-button i { width: 8px; height: 8px; border-radius: 50%; background: #f04e49; box-shadow: 0 0 8px #f04e4966; }
+.recording-indicator[hidden], .camera-placeholder[hidden], .record-stop-button[hidden], .recording-result[hidden] { display: none; }
+.camera-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: #101214ee; color: #b8bbc0; font-size: 13px; }
+.camera-placeholder-icon { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid #41464d; border-radius: 12px; }
+.camera-placeholder-icon svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.recording-controls { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.recording-controls .dialog-cancel, .recording-controls .record-start-button, .recording-controls .record-stop-button { min-height: 44px; }
+.recording-spacer { flex: 1; }
+.record-start-button, .record-stop-button { min-width: 132px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 0 16px; border: 1px solid #ff9a68; border-radius: 7px; background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+.record-start-button:disabled { opacity: .5; cursor: not-allowed; }
+.record-stop-button { background: #3b2727; border-color: #8e4947; color: #ffb7b5; }
+.recording-result { align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid #3e5747; border-radius: 8px; background: #1d2a22; color: #bde1c5; font-size: 13px; }
+.recording-result:not([hidden]) { display: flex; }
+.recording-result > div { display: flex; align-items: center; gap: 8px; }
+.recording-download { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border-radius: 6px; padding: 0 14px; font-size: 12px; font-weight: 600; }
+.recording-note { margin: -6px 0 0; color: #848990; font-size: 11px; line-height: 1.6; }
+.media-canvas { position: fixed; z-index: -1; left: -10px; bottom: 0; width: 2px; height: 2px; opacity: .001; pointer-events: none; }
+.picture-in-picture-source { position: fixed; z-index: -1; right: 0; bottom: 0; width: 160px; height: 90px; opacity: .001; pointer-events: none; }
 .editor-form { display: flex; flex-direction: column; padding: 27px 30px 23px; max-height: inherit; }
 .dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 23px; }
 .dialog-heading h2 { margin: 0 0 7px; font-size: 20px; font-weight: 600; letter-spacing: -.02em; }
@@ -257,6 +294,8 @@ input[type="range"]::-moz-range-thumb { width: 10px; height: 10px; border-radius
   .text-button { font-size: 11px; padding: 7px 5px; }
   .text-button svg { width: 14px; height: 14px; }
   .stage-tools { gap: 3px; }
+  .feature-button { width: 44px; height: 44px; }
+  .feature-button svg { width: 19px; height: 19px; }
   .script-content { width: calc(100% - 40px); padding-top: 9vh; padding-bottom: 38vh; font-size: 32px; line-height: 1.8; }
   .reading-guide { left: 13px; right: 13px; top: 47%; }
   .playback-bar { bottom: 12px; left: 10px; right: 10px; min-height: 55px; padding: 0 10px; gap: 10px; }
@@ -318,6 +357,19 @@ input[type="range"]::-moz-range-thumb { width: 10px; height: 10px; border-radius
   .color-option { width: 26px; height: 26px; }
   .title-input { height: 44px; font-size: 16px; }
   .editor-form textarea { min-height: 35vh; font-size: 16px; -webkit-overflow-scrolling: touch; }
+  .recording-dialog { width: calc(100vw - 16px); max-height: calc(var(--app-viewport-height, 100dvh) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px); border-radius: 12px; }
+  .recording-panel { gap: 13px; padding: 15px 12px 12px; }
+  .recording-heading h2 { font-size: 18px; }
+  .camera-frame { max-height: 54vh; }
+  .camera-frame.is-portrait { height: min(53vh, 520px); }
+  .recording-controls { gap: 7px; }
+  .recording-controls .dialog-cancel { flex: 1 1 30%; padding: 0 8px; font-size: 12px; }
+  .recording-spacer { display: none; }
+  .record-start-button, .record-stop-button { flex: 1 1 100%; min-height: 48px; }
+  .recording-result { align-items: flex-start; flex-direction: column; }
+  .recording-result > div { width: 100%; }
+  .recording-result .dialog-cancel, .recording-download { flex: 1; }
+  .recording-note { font-size: 10px; }
   .dialog-close { width: 44px; height: 44px; }
   .dialog-cancel, .dialog-save { min-height: 44px; font-size: 14px; }
   .toast { bottom: calc(16px + env(safe-area-inset-bottom)); }

@@ -19,6 +19,13 @@
     lineHeightRange: $('#lineHeightRange'), lineHeightValue: $('#lineHeightValue'), sideMarginRange: $('#sideMarginRange'), sideMarginValue: $('#sideMarginValue'),
     textColorOptions: $('#textColorOptions'), presentationToolbar: $('#presentationToolbar'), presentationSpeedValue: $('#presentationSpeedValue'),
     presentationFontValue: $('#presentationFontValue'), presentationPlayButton: $('#presentationPlayButton'),
+    voiceFollowButton: $('#voiceFollowButton'), pictureInPictureButton: $('#pictureInPictureButton'), cameraRecordButton: $('#cameraRecordButton'),
+    recordingDialog: $('#recordingDialog'), cameraPreview: $('#cameraPreview'), cameraFrame: $('#cameraFrame'), cameraScriptContent: $('#cameraScriptContent'),
+    cameraScriptWindow: $('#cameraScriptWindow'), cameraPlaceholder: $('#cameraPlaceholder'), cameraStatus: $('#cameraStatus'),
+    switchCameraButton: $('#switchCameraButton'), recordScrollButton: $('#recordScrollButton'), startRecordingButton: $('#startRecordingButton'),
+    stopRecordingButton: $('#stopRecordingButton'), recordingIndicator: $('#recordingIndicator'), recordingTimer: $('#recordingTimer'),
+    recordingResult: $('#recordingResult'), recordingNote: $('#recordingNote'), downloadRecordingButton: $('#downloadRecordingButton'),
+    shareRecordingButton: $('#shareRecordingButton'), recordingCanvas: $('#recordingCanvas'), pipCanvas: $('#pictureInPictureCanvas'), pipVideo: $('#pictureInPictureVideo'),
     editorDialog: $('#editorDialog'), editorForm: $('#editorForm'), editorTitle: $('#editorTitle'), titleInput: $('#scriptTitleInput'),
     presentationExitButton: $('#presentationExitButton'),
     textInput: $('#scriptTextInput'), characterCount: $('#characterCount'), saveStatus: $('#saveStatus'), toast: $('#toast')
@@ -37,6 +44,27 @@
   let lastSaved = 0;
   let wakeLock = null;
   let wakeLockRequest = null;
+  let speechRecognizer = null;
+  let isVoiceFollowing = false;
+  let voiceRestartTimer = null;
+  let voiceParagraphIndex = 0;
+  let voiceCharacterIndex = 0;
+  let lastVoiceAnchor = null;
+  let lastVoiceSpeedSave = 0;
+  let voiceSpeedDirty = false;
+  let pictureInPictureStream = null;
+  let pictureInPictureFrame = 0;
+  let cameraStream = null;
+  let recordingStream = null;
+  let mediaRecorder = null;
+  let recordingChunks = [];
+  let recordingTimerInterval = null;
+  let recordingStartedAt = 0;
+  let closeCameraAfterRecording = false;
+  let cameraFacingMode = 'user';
+  let recordingCanvasFrame = 0;
+  let lastRecordingUrl = null;
+  let lastRecordingFile = null;
 
   function loadData() {
     try {
@@ -99,6 +127,10 @@
         elements.scriptContent.append(p);
       });
     }
+    elements.cameraScriptContent.replaceChildren(...Array.from(elements.scriptContent.children, (paragraph) => paragraph.cloneNode(true)));
+    voiceParagraphIndex = 0;
+    voiceCharacterIndex = 0;
+    lastVoiceAnchor = null;
     elements.emptyState.hidden = !isEmpty;
     elements.scriptContent.hidden = isEmpty;
     elements.scriptScroll.scrollTop = 0;
@@ -107,6 +139,7 @@
   }
 
   function selectScript(id) {
+    if (isVoiceFollowing) stopVoiceFollow();
     if (isPlaying || countdownTimer) stopPlayback();
     data.selectedId = id;
     renderScripts();
@@ -145,6 +178,8 @@
     elements.scriptContent.style.color = textColor;
     elements.scriptContent.style.lineHeight = String(Number(lineHeight) / 100);
     elements.scriptContent.style.width = `min(${100 - Number(sideMargin) * 2}%, 890px)`;
+    document.documentElement.style.setProperty('--record-text-color', textColor);
+    document.documentElement.style.setProperty('--record-line-height', String(Number(lineHeight) / 100));
     elements.textColorOptions.querySelectorAll('.color-option').forEach((button) => {
       const selected = button.dataset.color === textColor;
       button.classList.toggle('is-selected', selected);
@@ -170,6 +205,7 @@
     elements.progressSlider.value = String(Math.round(percent * 10));
     elements.progressValue.textContent = `${percent}%`;
     styleRange(elements.progressSlider);
+    syncCameraScriptPosition();
   }
 
   function openEditor({ script = selectedScript(), isNew = false } = {}) {
@@ -239,6 +275,7 @@
 
   function startPlayback() {
     if (countdownTimer || isPlaying) { pausePlayback(); return; }
+    if (isVoiceFollowing) stopVoiceFollow({ silent: true });
     if (!selectedScript()?.text.trim()) { showToast('先添加一段稿件内容，再开始提词'); return; }
     if (elements.scriptScroll.scrollTop >= elements.scriptScroll.scrollHeight - elements.scriptScroll.clientHeight - 2) elements.scriptScroll.scrollTop = 0;
     if (data.settings.countdown) runCountdown(Number(data.settings.countdownSeconds));
@@ -504,6 +541,21 @@
   $('#presentationFontUp').addEventListener('click', () => adjustFont(2));
   $('#presentationFontDown').addEventListener('click', () => adjustFont(-2));
   elements.presentationPlayButton.addEventListener('click', startPlayback);
+  elements.voiceFollowButton.addEventListener('click', toggleVoiceFollow);
+  elements.pictureInPictureButton.addEventListener('click', togglePictureInPicture);
+  elements.cameraRecordButton.addEventListener('click', openRecordingDialog);
+  $('#closeRecordingButton').addEventListener('click', closeRecordingDialog);
+  elements.recordingDialog.addEventListener('cancel', (event) => { event.preventDefault(); closeRecordingDialog(); });
+  elements.recordingDialog.addEventListener('click', (event) => { if (event.target === elements.recordingDialog) closeRecordingDialog(); });
+  elements.switchCameraButton.addEventListener('click', switchCamera);
+  elements.recordScrollButton.addEventListener('click', startRecordingScroll);
+  elements.startRecordingButton.addEventListener('click', startRecording);
+  elements.stopRecordingButton.addEventListener('click', stopRecording);
+  elements.shareRecordingButton.addEventListener('click', shareRecording);
+  elements.pipVideo.addEventListener('leavepictureinpicture', releasePictureInPicture);
+  elements.pipVideo.addEventListener('webkitpresentationmodechanged', () => {
+    if (elements.pipVideo.webkitPresentationMode !== 'picture-in-picture' && pictureInPictureStream) releasePictureInPicture();
+  });
   $('#mobileLibraryButton').addEventListener('click', () => openMobileDrawer('library'));
   $('#mobileSettingsButton').addEventListener('click', () => openMobileDrawer('settings'));
   $('#drawerBackdrop').addEventListener('click', closeMobileDrawers);
@@ -615,7 +667,545 @@
       if (isPlaying || countdownTimer) stopPlayback();
     }
   });
+
+  function normalizeSpeechText(value) {
+    let normalized = '';
+    const offsets = [];
+    const source = String(value || '');
+    for (let index = 0; index < source.length;) {
+      const point = String.fromCodePoint(source.codePointAt(index));
+      for (const character of point.normalize('NFKC').toLocaleLowerCase('zh-CN')) {
+        if (/[\p{L}\p{N}]/u.test(character)) {
+          normalized += character;
+          offsets.push(index);
+        }
+      }
+      index += point.length;
+    }
+    return { normalized, offsets };
+  }
+
+  function findSpokenAnchor(transcript) {
+    const spoken = normalizeSpeechText(transcript).normalized;
+    if (spoken.length < 2) return null;
+    const paragraphs = Array.from(elements.scriptContent.querySelectorAll('p'), (element) => ({
+      element,
+      ...normalizeSpeechText(element.textContent)
+    }));
+    const candidates = [spoken];
+    for (let length = Math.min(10, spoken.length - 1); length >= 3; length -= 1) {
+      candidates.push(spoken.slice(-length));
+    }
+    for (let paragraphIndex = Math.min(voiceParagraphIndex, Math.max(0, paragraphs.length - 1)); paragraphIndex < paragraphs.length; paragraphIndex += 1) {
+      const paragraph = paragraphs[paragraphIndex];
+      const minimumOffset = paragraphIndex === voiceParagraphIndex ? Math.max(0, voiceCharacterIndex - 2) : 0;
+      for (const candidate of candidates) {
+        const normalizedOffset = paragraph.normalized.indexOf(candidate, minimumOffset);
+        if (normalizedOffset >= 0) return { ...paragraph, paragraphIndex, normalizedOffset, matchedLength: candidate.length };
+      }
+    }
+    return null;
+  }
+
+  function updateVoiceFollowButton() {
+    elements.voiceFollowButton.classList.toggle('is-active', isVoiceFollowing);
+    elements.voiceFollowButton.setAttribute('aria-pressed', String(isVoiceFollowing));
+    elements.voiceFollowButton.setAttribute('aria-label', isVoiceFollowing ? '停止口播跟随' : '开始口播跟随');
+    elements.voiceFollowButton.title = isVoiceFollowing ? '停止口播跟随' : '口播跟随（需麦克风与语音识别支持）';
+  }
+
+  function stopVoiceFollow({ silent = false } = {}) {
+    isVoiceFollowing = false;
+    clearTimeout(voiceRestartTimer);
+    voiceRestartTimer = null;
+    const recognizer = speechRecognizer;
+    speechRecognizer = null;
+    if (recognizer) {
+      recognizer.onend = null;
+      try { recognizer.stop(); } catch { try { recognizer.abort(); } catch {} }
+    }
+    updateVoiceFollowButton();
+    if (voiceSpeedDirty) {
+      saveData();
+      voiceSpeedDirty = false;
+    }
+    if (!isPlaying) {
+      elements.readyLabel.classList.remove('is-playing');
+      elements.readyLabel.lastElementChild.textContent = '准备就绪';
+    }
+    if (!silent) showToast('口播跟随已停止');
+  }
+
+  function applyVoiceAnchor(transcript) {
+    const anchor = findSpokenAnchor(transcript);
+    if (!anchor) return;
+    const textNode = anchor.element.firstChild;
+    const sourceOffset = anchor.offsets[anchor.normalizedOffset] ?? 0;
+    const range = document.createRange();
+    const boundedOffset = Math.min(sourceOffset, textNode?.textContent?.length || 0);
+    let anchorTop;
+    if (textNode) {
+      range.setStart(textNode, boundedOffset);
+      const nextCodePointLength = textNode.textContent.codePointAt(boundedOffset) > 0xFFFF ? 2 : 1;
+      range.setEnd(textNode, Math.min(textNode.textContent.length, boundedOffset + nextCodePointLength));
+      const rangeRect = range.getBoundingClientRect();
+      anchorTop = rangeRect.height ? rangeRect.top : anchor.element.getBoundingClientRect().top;
+    } else {
+      anchorTop = anchor.element.getBoundingClientRect().top;
+    }
+    const scrollRect = elements.scriptScroll.getBoundingClientRect();
+    const guideRect = $('.reading-guide').getBoundingClientRect();
+    const guideOffset = guideRect.top - scrollRect.top;
+    const maxScroll = Math.max(0, elements.scriptScroll.scrollHeight - elements.scriptScroll.clientHeight);
+    const targetScroll = Math.max(0, Math.min(maxScroll, elements.scriptScroll.scrollTop + anchorTop - scrollRect.top - guideOffset));
+    const now = performance.now();
+
+    if (lastVoiceAnchor) {
+      const elapsedSeconds = (now - lastVoiceAnchor.time) / 1000;
+      const distance = targetScroll - lastVoiceAnchor.scrollTop;
+      if (elapsedSeconds >= 0.35 && elapsedSeconds <= 12 && distance > 3) {
+        const measuredSpeed = Math.max(1, Math.min(240, distance / elapsedSeconds));
+        data.settings.speed = Math.round(Number(data.settings.speed) * 0.45 + measuredSpeed * 0.55);
+        voiceSpeedDirty = true;
+        applySettings();
+        if (now - lastVoiceSpeedSave > 2500) {
+          saveData();
+          lastVoiceSpeedSave = now;
+        }
+      }
+    }
+    lastVoiceAnchor = { time: now, scrollTop: targetScroll };
+    voiceParagraphIndex = anchor.paragraphIndex;
+    voiceCharacterIndex = anchor.normalizedOffset + anchor.matchedLength;
+    scrollPosition = targetScroll;
+    elements.scriptScroll.scrollTo({ top: targetScroll, behavior: 'smooth' });
+    elements.readyLabel.classList.add('is-playing');
+    elements.readyLabel.lastElementChild.textContent = '正在口播跟随';
+  }
+
+  function startVoiceFollow() {
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Recognition) {
+      showToast('当前浏览器没有语音识别功能，可用 Safari 或 Chrome 打开');
+      return;
+    }
+    if (!selectedScript()?.text.trim()) {
+      showToast('先添加一段稿件内容，再开始口播跟随');
+      return;
+    }
+    if (isPlaying || countdownTimer) stopPlayback();
+    const recognizer = new Recognition();
+    recognizer.lang = 'zh-CN';
+    recognizer.continuous = true;
+    recognizer.interimResults = true;
+    recognizer.maxAlternatives = 1;
+    recognizer.onresult = (event) => {
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const result = event.results[index];
+        if (result[0]?.transcript) applyVoiceAnchor(result[0].transcript);
+      }
+    };
+    recognizer.onerror = (event) => {
+      if (!isVoiceFollowing || event.error === 'aborted' || event.error === 'no-speech') return;
+      const messages = {
+        'not-allowed': '请在浏览器中允许麦克风访问后重试',
+        'service-not-allowed': '系统语音识别不可用，请检查 Siri 或语音识别设置',
+        'language-not-supported': '当前设备暂不支持中文语音识别',
+        network: '语音识别服务连接失败，请检查网络'
+      };
+      isVoiceFollowing = false;
+      speechRecognizer = null;
+      updateVoiceFollowButton();
+      elements.readyLabel.classList.remove('is-playing');
+      elements.readyLabel.lastElementChild.textContent = '准备就绪';
+      showToast(messages[event.error] || '语音识别暂时不可用，请改用手动提词');
+    };
+    recognizer.onend = () => {
+      if (!isVoiceFollowing || speechRecognizer !== recognizer) return;
+      voiceRestartTimer = setTimeout(() => {
+        if (!isVoiceFollowing || speechRecognizer !== recognizer) return;
+        try { recognizer.start(); } catch {
+          voiceRestartTimer = setTimeout(() => {
+            if (isVoiceFollowing && speechRecognizer === recognizer) {
+              try { recognizer.start(); } catch { stopVoiceFollow({ silent: true }); }
+            }
+          }, 700);
+        }
+      }, 250);
+    };
+    speechRecognizer = recognizer;
+    isVoiceFollowing = true;
+    voiceParagraphIndex = 0;
+    voiceCharacterIndex = 0;
+    lastVoiceAnchor = null;
+    updateVoiceFollowButton();
+    elements.readyLabel.classList.add('is-playing');
+    elements.readyLabel.lastElementChild.textContent = '正在听取口播';
+    try {
+      recognizer.start();
+      showToast('开始口播，文字会跟随识别到的稿件位置');
+    } catch {
+      stopVoiceFollow({ silent: true });
+      showToast('无法启动语音识别，请重试或检查浏览器权限');
+    }
+  }
+
+  function toggleVoiceFollow() {
+    if (isVoiceFollowing) stopVoiceFollow();
+    else startVoiceFollow();
+  }
+
+  function getProgressRatio() {
+    const max = Math.max(0, elements.scriptScroll.scrollHeight - elements.scriptScroll.clientHeight);
+    return max ? Math.max(0, Math.min(1, elements.scriptScroll.scrollTop / max)) : 0;
+  }
+
+  function wrapCanvasText(context, text, maxWidth) {
+    const lines = [];
+    for (const paragraph of String(text || '').replace(/\r\n?/g, '\n').split('\n')) {
+      if (!paragraph) { lines.push(''); continue; }
+      let line = '';
+      for (const character of paragraph) {
+        const candidate = line + character;
+        if (line && context.measureText(candidate).width > maxWidth) {
+          lines.push(line);
+          line = character;
+        } else line = candidate;
+      }
+      if (line) lines.push(line);
+    }
+    return lines;
+  }
+
+  function drawPictureInPictureFrame() {
+    const canvas = elements.pipCanvas;
+    const context = canvas.getContext('2d');
+    const width = canvas.width, height = canvas.height;
+    const fontSize = Math.max(28, Math.min(46, Number(data.settings.fontSize)));
+    const lineHeight = fontSize * (Number(data.settings.lineHeight) / 100);
+    context.fillStyle = '#101214';
+    context.fillRect(0, 0, width, height);
+    context.font = `500 ${fontSize}px -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif`;
+    context.fillStyle = data.settings.textColor || '#f0efed';
+    context.textBaseline = 'middle';
+    const margin = width * Math.max(.06, Number(data.settings.sideMargin) / 100);
+    const lines = wrapCanvasText(context, selectedScript()?.text || '', width - margin * 2);
+    const visibleHeight = height * .7;
+    const maxOffset = Math.max(0, lines.length * lineHeight - visibleHeight);
+    const offset = getProgressRatio() * maxOffset;
+    const guideY = height * .56;
+    const startY = guideY - offset;
+    lines.forEach((line, index) => {
+      const y = startY + index * lineHeight;
+      if (y > height * .08 && y < height * .94) context.fillText(line, margin, y, width - margin * 2);
+    });
+    context.fillStyle = '#f28c55cc';
+    context.fillRect(width * .07, guideY, width * .86, 2);
+    pictureInPictureFrame = requestAnimationFrame(drawPictureInPictureFrame);
+  }
+
+  function supportsPictureInPicture() {
+    const video = elements.pipVideo;
+    const standard = document.pictureInPictureEnabled && typeof video.requestPictureInPicture === 'function';
+    const safari = typeof video.webkitSupportsPresentationMode === 'function' && video.webkitSupportsPresentationMode('picture-in-picture');
+    return Boolean(standard || safari);
+  }
+
+  async function togglePictureInPicture() {
+    const video = elements.pipVideo;
+    const alreadyOpen = document.pictureInPictureElement === video || video.webkitPresentationMode === 'picture-in-picture';
+    if (alreadyOpen) {
+      try {
+        if (document.pictureInPictureElement === video && document.exitPictureInPicture) await document.exitPictureInPicture();
+        else if (typeof video.webkitSetPresentationMode === 'function') video.webkitSetPresentationMode('inline');
+      } catch { showToast('无法关闭画中画窗口，请使用窗口上的关闭按钮'); }
+      return;
+    }
+    if (!supportsPictureInPicture() || typeof elements.pipCanvas.captureStream !== 'function') {
+      showToast('当前 Safari 运行方式不支持画中画；请在 Safari 标签页中尝试');
+      return;
+    }
+    try {
+      cancelAnimationFrame(pictureInPictureFrame);
+      drawPictureInPictureFrame();
+      pictureInPictureStream = elements.pipCanvas.captureStream(24);
+      video.srcObject = pictureInPictureStream;
+      await video.play();
+      if (typeof video.webkitSetPresentationMode === 'function' && video.webkitSupportsPresentationMode?.('picture-in-picture')) {
+        video.webkitSetPresentationMode('picture-in-picture');
+      } else {
+        await video.requestPictureInPicture();
+      }
+      elements.pictureInPictureButton.classList.add('is-active');
+      showToast('画中画已打开，可切换到其他 App 查看提词');
+    } catch (error) {
+      releasePictureInPicture();
+      const message = error?.name === 'NotSupportedError'
+        ? '此 Safari 模式暂不允许画中画；请从 Safari 标签页打开网页'
+        : '画中画未能启动，请检查浏览器是否支持视频画中画';
+      showToast(message);
+    }
+  }
+
+  function releasePictureInPicture() {
+    cancelAnimationFrame(pictureInPictureFrame);
+    pictureInPictureFrame = 0;
+    pictureInPictureStream?.getTracks().forEach((track) => track.stop());
+    pictureInPictureStream = null;
+    elements.pipVideo.pause();
+    elements.pipVideo.srcObject = null;
+    elements.pictureInPictureButton.classList.remove('is-active');
+  }
+
+  function syncCameraScriptPosition() {
+    const max = Math.max(0, elements.cameraScriptWindow.scrollHeight - elements.cameraScriptWindow.clientHeight);
+    if (max > 0) elements.cameraScriptWindow.scrollTop = getProgressRatio() * max;
+  }
+
+  async function startCameraStream(facingMode = cameraFacingMode) {
+    if (!navigator.mediaDevices?.getUserMedia) throw new Error('当前浏览器无法调用相机，请使用支持相机权限的 HTTPS 页面');
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: facingMode }, width: { ideal: 1280 }, height: { ideal: 1920 } },
+      audio: true
+    });
+    cameraStream?.getTracks().forEach((track) => track.stop());
+    cameraStream = stream;
+    cameraFacingMode = facingMode;
+    elements.cameraPreview.srcObject = stream;
+    await elements.cameraPreview.play();
+    const portrait = window.innerHeight >= window.innerWidth;
+    elements.cameraFrame.classList.toggle('is-portrait', portrait);
+    elements.cameraPlaceholder.hidden = true;
+    elements.startRecordingButton.disabled = false;
+    elements.switchCameraButton.textContent = facingMode === 'user' ? '切换后摄' : '切换前摄';
+    const canvas = elements.recordingCanvas;
+    canvas.width = portrait ? 720 : 1280;
+    canvas.height = portrait ? 1280 : 720;
+    elements.cameraStatus.textContent = '相机已就绪';
+    syncCameraScriptPosition();
+  }
+
+  async function openRecordingDialog() {
+    if (!selectedScript()?.text.trim()) {
+      showToast('先添加一段稿件内容，再开始摄像录制');
+      return;
+    }
+    if (!window.MediaRecorder || !elements.recordingCanvas.captureStream) {
+      showToast('当前浏览器暂不支持网页视频录制');
+      return;
+    }
+    if (!elements.recordingDialog.open) elements.recordingDialog.showModal();
+    elements.cameraPlaceholder.hidden = false;
+    elements.cameraStatus.textContent = '正在连接相机和麦克风…';
+    elements.startRecordingButton.disabled = true;
+    elements.recordingResult.hidden = true;
+    elements.recordingNote.textContent = '相机预览已启动；开始录制后，提词文字会与画面合成为一个视频文件。';
+    try {
+      await startCameraStream('user');
+    } catch (error) {
+      elements.cameraPlaceholder.hidden = false;
+      elements.cameraStatus.textContent = error?.name === 'NotAllowedError' ? '请允许浏览器使用相机和麦克风' : (error?.message || '相机启动失败');
+      elements.recordingNote.textContent = '录制需要 HTTPS 页面，并需在浏览器提示时允许相机与麦克风权限。';
+      showToast(elements.cameraStatus.textContent);
+    }
+  }
+
+  async function switchCamera() {
+    if (mediaRecorder?.state === 'recording') return;
+    const nextMode = cameraFacingMode === 'user' ? 'environment' : 'user';
+    cameraStream?.getTracks().forEach((track) => track.stop());
+    cameraStream = null;
+    elements.cameraPreview.srcObject = null;
+    elements.cameraPlaceholder.hidden = false;
+    elements.cameraStatus.textContent = '正在切换摄像头…';
+    elements.startRecordingButton.disabled = true;
+    try { await startCameraStream(nextMode); }
+    catch (error) {
+      elements.cameraStatus.textContent = error?.message || '无法切换摄像头';
+      showToast(elements.cameraStatus.textContent);
+    }
+  }
+
+  function drawRecordingFrame() {
+    if (!cameraStream || elements.cameraPreview.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+      recordingCanvasFrame = requestAnimationFrame(drawRecordingFrame);
+      return;
+    }
+    const canvas = elements.recordingCanvas;
+    const context = canvas.getContext('2d');
+    const width = canvas.width, height = canvas.height;
+    const sourceWidth = elements.cameraPreview.videoWidth || width;
+    const sourceHeight = elements.cameraPreview.videoHeight || height;
+    const scale = Math.max(width / sourceWidth, height / sourceHeight);
+    const drawWidth = sourceWidth * scale, drawHeight = sourceHeight * scale;
+    context.fillStyle = '#08090b';
+    context.fillRect(0, 0, width, height);
+    context.drawImage(elements.cameraPreview, (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
+
+    const panelHeight = Math.round(height * .43);
+    const gradient = context.createLinearGradient(0, 0, 0, panelHeight + 70);
+    gradient.addColorStop(0, 'rgba(9,10,12,.9)');
+    gradient.addColorStop(.78, 'rgba(9,10,12,.72)');
+    gradient.addColorStop(1, 'rgba(9,10,12,0)');
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, width, panelHeight + 70);
+
+    const fontSize = Math.max(38, Math.min(66, width * .056));
+    const lineHeight = fontSize * Math.max(1.35, Math.min(2.1, Number(data.settings.lineHeight) / 100));
+    context.font = `600 ${fontSize}px -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif`;
+    context.fillStyle = data.settings.textColor || '#f0efed';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.shadowColor = '#000';
+    context.shadowBlur = 5;
+    const margin = width * Math.max(.06, Number(data.settings.sideMargin) / 100);
+    const lines = wrapCanvasText(context, selectedScript()?.text || '', width - margin * 2);
+    const maxOffset = Math.max(0, lines.length * lineHeight - panelHeight * .7);
+    const centerLine = panelHeight * .7;
+    const offset = getProgressRatio() * maxOffset;
+    lines.forEach((line, index) => {
+      const y = centerLine - offset + index * lineHeight;
+      if (y > 20 && y < panelHeight) context.fillText(line, width / 2, y, width - margin * 2);
+    });
+    context.shadowBlur = 0;
+    context.fillStyle = '#f28c55cc';
+    context.fillRect(width * .08, centerLine + lineHeight * .48, width * .84, Math.max(2, width / 500));
+    recordingCanvasFrame = requestAnimationFrame(drawRecordingFrame);
+  }
+
+  function startRecordingScroll() {
+    if (isVoiceFollowing) stopVoiceFollow({ silent: true });
+    if (isPlaying) pausePlayback();
+    else if (countdownTimer) pausePlayback();
+    else beginScrolling();
+    elements.recordScrollButton.textContent = isPlaying ? '暂停提词' : '继续提词';
+  }
+
+  function startRecording() {
+    if (!cameraStream || mediaRecorder?.state === 'recording') return;
+    if (isVoiceFollowing) {
+      stopVoiceFollow({ silent: true });
+      showToast('录制期间暂时关闭口播跟随；提词仍会按当前速度滚动');
+    }
+    try {
+      cancelAnimationFrame(recordingCanvasFrame);
+      drawRecordingFrame();
+      const canvasStream = elements.recordingCanvas.captureStream(30);
+      recordingStream = new MediaStream([...canvasStream.getVideoTracks(), ...cameraStream.getAudioTracks()]);
+      const mimeTypes = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm'];
+      const mimeType = mimeTypes.find((candidate) => MediaRecorder.isTypeSupported?.(candidate));
+      mediaRecorder = new MediaRecorder(recordingStream, mimeType ? { mimeType } : undefined);
+      recordingChunks = [];
+      mediaRecorder.ondataavailable = (event) => { if (event.data?.size) recordingChunks.push(event.data); };
+      mediaRecorder.onstop = () => {
+        cancelAnimationFrame(recordingCanvasFrame);
+        recordingCanvasFrame = 0;
+        if (recordingTimerInterval) clearInterval(recordingTimerInterval);
+        recordingTimerInterval = null;
+        recordingStream?.getTracks().forEach((track) => track.stop());
+        recordingStream = null;
+        elements.startRecordingButton.disabled = false;
+        if (isPlaying) pausePlayback();
+        elements.recordScrollButton.textContent = '开始提词';
+        if (closeCameraAfterRecording) {
+          closeCameraAfterRecording = false;
+          cleanupCamera();
+        }
+        const type = mediaRecorder?.mimeType || recordingChunks[0]?.type || 'video/mp4';
+        const blob = new Blob(recordingChunks, { type });
+        if (!blob.size) {
+          showToast('没有录到视频内容，请重试');
+          return;
+        }
+        if (lastRecordingUrl) URL.revokeObjectURL(lastRecordingUrl);
+        lastRecordingUrl = URL.createObjectURL(blob);
+        const extension = type.includes('mp4') ? 'mp4' : 'webm';
+        const title = selectedScript()?.title || '念白提词录制';
+        const fileName = `${title}-${new Date().toISOString().replace(/[:.]/g, '-')}.${extension}`;
+        lastRecordingFile = typeof File === 'function' ? new File([blob], fileName, { type }) : null;
+        elements.downloadRecordingButton.href = lastRecordingUrl;
+        elements.downloadRecordingButton.download = fileName;
+        elements.recordingResult.hidden = false;
+        elements.recordingNote.textContent = '视频已生成；可保存到设备或通过系统分享发送。';
+      };
+      mediaRecorder.start(1000);
+      if (!isPlaying) beginScrolling();
+      elements.recordScrollButton.textContent = '暂停提词';
+      elements.recordingIndicator.hidden = false;
+      elements.recordingResult.hidden = true;
+      elements.startRecordingButton.hidden = true;
+      elements.stopRecordingButton.hidden = false;
+      elements.switchCameraButton.disabled = true;
+      recordingStartedAt = Date.now();
+      recordingTimerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - recordingStartedAt) / 1000);
+        const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const seconds = String(elapsed % 60).padStart(2, '0');
+        elements.recordingTimer.textContent = `${minutes}:${seconds}`;
+      }, 500);
+      elements.recordingNote.textContent = '正在录制相机画面与麦克风声音；关闭窗口或点停止结束。';
+    } catch (error) {
+      recordingStream?.getTracks().forEach((track) => track.stop());
+      recordingStream = null;
+      cancelAnimationFrame(recordingCanvasFrame);
+      showToast(error?.message || '无法开始录制，请检查浏览器编码支持');
+    }
+  }
+
+  function stopRecording() {
+    if (mediaRecorder?.state === 'recording') {
+      mediaRecorder.stop();
+      elements.recordingIndicator.hidden = true;
+      elements.startRecordingButton.hidden = false;
+      elements.stopRecordingButton.hidden = true;
+      elements.startRecordingButton.disabled = true;
+      elements.switchCameraButton.disabled = false;
+    }
+  }
+
+  function cleanupCamera() {
+    if (mediaRecorder?.state === 'recording') stopRecording();
+    cameraStream?.getTracks().forEach((track) => track.stop());
+    cameraStream = null;
+    elements.cameraPreview.pause();
+    elements.cameraPreview.srcObject = null;
+    elements.cameraPlaceholder.hidden = false;
+    elements.cameraStatus.textContent = '相机已关闭';
+    elements.startRecordingButton.disabled = true;
+  }
+
+  function closeRecordingDialog() {
+    if (mediaRecorder?.state === 'recording') {
+      closeCameraAfterRecording = true;
+      stopRecording();
+    } else cleanupCamera();
+    if (elements.recordingDialog.open) elements.recordingDialog.close();
+  }
+
+  async function shareRecording() {
+    if (!lastRecordingFile || !navigator.canShare?.({ files: [lastRecordingFile] }) || !navigator.share) {
+      showToast('当前浏览器不支持直接分享视频，请先保存文件');
+      return;
+    }
+    try { await navigator.share({ files: [lastRecordingFile], title: lastRecordingFile.name }); }
+    catch (error) { if (error?.name !== 'AbortError') showToast('分享失败，请保存视频后重试'); }
+  }
+
   document.addEventListener('visibilitychange', () => { if (isPlaying) syncWakeLock(); });
+  window.addEventListener('resize', () => {
+    if (elements.recordingDialog.open && cameraStream) {
+      const portrait = window.innerHeight >= window.innerWidth;
+      elements.cameraFrame.classList.toggle('is-portrait', portrait);
+      elements.recordingCanvas.width = portrait ? 720 : 1280;
+      elements.recordingCanvas.height = portrait ? 1280 : 720;
+    }
+  }, { passive: true });
+  window.addEventListener('beforeunload', () => {
+    stopVoiceFollow({ silent: true });
+    releasePictureInPicture();
+    cleanupCamera();
+    if (lastRecordingUrl) URL.revokeObjectURL(lastRecordingUrl);
+  });
   syncAppViewportHeight();
   window.addEventListener('resize', () => { syncAppViewportHeight(); updateProgress(); }, { passive: true });
   window.visualViewport?.addEventListener('resize', () => { syncAppViewportHeight(); updateProgress(); }, { passive: true });
@@ -623,6 +1213,7 @@
   renderScripts();
   renderScript();
   applySettings();
+  updateVoiceFollowButton();
   syncPresentationPlayButton();
   try {
     if (!lastSaved && !localStorage.getItem(STORAGE_KEY)) saveData();

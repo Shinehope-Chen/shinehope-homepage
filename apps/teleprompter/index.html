@@ -60,6 +60,9 @@
             <div class="ready-label" id="readyLabel"><span class="status-dot"></span><span>准备就绪</span></div>
             <div class="stage-tools">
               <button id="editButton" class="text-button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5 4 4M4 20l4.3-.8L19 8.5a2.12 2.12 0 0 0-3-3L5.3 16.2 4 20Z"/></svg>编辑稿件</button>
+              <button id="voiceFollowButton" class="icon-button feature-button" title="口播跟随" aria-label="开始口播跟随" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/></svg></button>
+              <button id="pictureInPictureButton" class="icon-button feature-button" title="画中画悬浮提词" aria-label="画中画悬浮提词"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M13 12h6v5h-6zM7 9h4m-4 3h3"/></svg></button>
+              <button id="cameraRecordButton" class="icon-button feature-button" title="摄像录制" aria-label="打开摄像录制"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg></button>
               <button id="fullscreenButton" class="icon-button" title="全屏提词" aria-label="全屏提词"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/></svg></button>
             </div>
           </div>
@@ -133,6 +136,35 @@
           <div class="dialog-footer"><span id="characterCount">0 字</span><div><button type="button" class="dialog-cancel" id="cancelEdit">取消</button><button type="submit" class="dialog-save" id="saveScriptButton">保存稿件</button></div></div>
         </form>
       </dialog>
+      <dialog id="recordingDialog" class="recording-dialog">
+        <section class="recording-panel" aria-labelledby="recordingTitle">
+          <header class="recording-heading">
+            <div><h2 id="recordingTitle">摄像录制</h2><p>提词文字会合成到录制画面中</p></div>
+            <button class="icon-button dialog-close" id="closeRecordingButton" type="button" aria-label="关闭录制窗口"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+          </header>
+          <div class="camera-frame" id="cameraFrame">
+            <video id="cameraPreview" playsinline autoplay muted></video>
+            <div class="camera-script-window" id="cameraScriptWindow" aria-hidden="true"><div class="camera-script-content" id="cameraScriptContent"></div><div class="camera-reading-guide"></div></div>
+            <div class="recording-indicator" id="recordingIndicator" hidden><i></i><span id="recordingTimer">00:00</span></div>
+            <div class="camera-placeholder" id="cameraPlaceholder"><span class="camera-placeholder-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg></span><span id="cameraStatus">正在连接相机…</span></div>
+          </div>
+          <div class="recording-controls">
+            <button type="button" class="dialog-cancel" id="switchCameraButton">切换摄像头</button>
+            <button type="button" class="dialog-cancel" id="recordScrollButton">开始提词</button>
+            <span class="recording-spacer"></span>
+            <button type="button" class="record-start-button" id="startRecordingButton" disabled><i></i>开始录制</button>
+            <button type="button" class="record-stop-button" id="stopRecordingButton" hidden>停止录制</button>
+          </div>
+          <div class="recording-result" id="recordingResult" hidden>
+            <span>视频已就绪</span>
+            <div><button type="button" class="dialog-cancel" id="shareRecordingButton">分享</button><a class="dialog-save recording-download" id="downloadRecordingButton" download>保存视频</a></div>
+          </div>
+          <p class="recording-note" id="recordingNote">需要允许访问相机和麦克风。录制的视频会先保存在本机。</p>
+        </section>
+      </dialog>
+      <canvas id="pictureInPictureCanvas" class="media-canvas" width="960" height="540" aria-hidden="true"></canvas>
+      <video id="pictureInPictureVideo" class="picture-in-picture-source" playsinline muted aria-hidden="true"></video>
+      <canvas id="recordingCanvas" class="media-canvas" aria-hidden="true"></canvas>
       <button id="presentationExitButton" class="presentation-exit" type="button" aria-label="退出专注显示" title="退出专注显示" hidden>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
       </button>
