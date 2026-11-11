@@ -94,6 +94,8 @@ button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .script-content { width: min(100% - 90px, 890px); margin: 0 auto; padding: 6vh 0 45vh; color: #f0efed; font-size: 48px; font-weight: 500; line-height: 1.72; letter-spacing: .025em; white-space: pre-wrap; text-wrap: pretty; transform-origin: center; transition: font-size .15s, transform .2s; }
 .script-content p { margin: 0 0 1.22em; }
 .script-content p:last-child { margin-bottom: 0; }
+.script-content .script-char { border-radius: .08em; box-decoration-break: clone; -webkit-box-decoration-break: clone; transition: color .14s linear, background-color .14s linear; }
+.script-content .script-char.is-spoken { color: #17191c; background: #f2a477; text-shadow: none; }
 .script-content:empty { display: none; }
 .reading-guide { pointer-events: none; position: absolute; left: 24px; right: 24px; top: 38%; height: 1px; background: linear-gradient(90deg, transparent 0%, #f28c55 4%, #f28c55 96%, transparent 100%); box-shadow: 0 0 10px #f28c5530; opacity: .9; z-index: 1; }
 .playback-bar { position: absolute; z-index: 3; left: 14px; right: 14px; bottom: 18px; min-height: 62px; display: flex; align-items: center; gap: 32px; padding: 0 20px; border: 1px solid #35393f; border-radius: 9px; background: #1c1f23ee; backdrop-filter: blur(12px); }

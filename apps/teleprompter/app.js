@@ -47,8 +47,17 @@
   let speechRecognizer = null;
   let isVoiceFollowing = false;
   let voiceRestartTimer = null;
+  let voiceFollowFrame = 0;
+  let voiceLastFrame = 0;
+  let voiceTargetScroll = 0;
+  let voiceParagraphs = [];
   let voiceParagraphIndex = 0;
   let voiceCharacterIndex = 0;
+  let voiceHighlightedParagraphIndex = 0;
+  let voiceHighlightedSourceEnd = 0;
+  let voiceHighlightQueue = [];
+  let voiceHighlightTimer = null;
+  let voiceHighlightInterval = 105;
   let lastVoiceAnchor = null;
   let lastVoiceSpeedSave = 0;
   let voiceSpeedDirty = false;
@@ -99,6 +108,29 @@
 
   function selectedScript() { return data.scripts.find((item) => item.id === data.selectedId) || data.scripts[0] || null; }
 
+  function appendScriptCharacters(paragraph, text) {
+    const segmenter = typeof Intl.Segmenter === 'function'
+      ? new Intl.Segmenter('zh-CN', { granularity: 'grapheme' })
+      : null;
+    const segments = segmenter
+      ? Array.from(segmenter.segment(text), ({ segment, index }) => ({ segment, index }))
+      : Array.from(text).reduce((result, segment) => {
+        const index = result.length ? result[result.length - 1].index + result[result.length - 1].segment.length : 0;
+        result.push({ segment, index });
+        return result;
+      }, []);
+    const fragment = document.createDocumentFragment();
+    segments.forEach(({ segment, index }) => {
+      const character = document.createElement('span');
+      character.className = 'script-char';
+      character.dataset.start = String(index);
+      character.dataset.end = String(index + segment.length);
+      character.textContent = segment;
+      fragment.append(character);
+    });
+    paragraph.append(fragment);
+  }
+
   function renderScripts() {
     elements.scriptList.replaceChildren();
     data.scripts.forEach((script) => {
@@ -116,6 +148,12 @@
   }
 
   function renderScript() {
+    if (isVoiceFollowing) stopVoiceFollow({ silent: true });
+    cancelAnimationFrame(voiceFollowFrame);
+    clearTimeout(voiceHighlightTimer);
+    voiceFollowFrame = 0;
+    voiceHighlightTimer = null;
+    voiceHighlightQueue = [];
     const script = selectedScript();
     const isEmpty = !script || !script.text.trim();
     elements.activeTitle.textContent = script?.title || '未命名稿件';
@@ -123,13 +161,20 @@
     if (script?.text.trim()) {
       script.text.replace(/\r\n?/g, '\n').split(/\n\s*\n/).filter((part) => part.trim()).forEach((part) => {
         const p = document.createElement('p');
-        p.textContent = part.trim();
+        appendScriptCharacters(p, part.trim());
         elements.scriptContent.append(p);
       });
     }
     elements.cameraScriptContent.replaceChildren(...Array.from(elements.scriptContent.children, (paragraph) => paragraph.cloneNode(true)));
+    voiceParagraphs = Array.from(elements.scriptContent.querySelectorAll('p'), (element) => ({
+      element,
+      ...normalizeSpeechText(element.textContent)
+    }));
     voiceParagraphIndex = 0;
     voiceCharacterIndex = 0;
+    voiceHighlightedParagraphIndex = 0;
+    voiceHighlightedSourceEnd = 0;
+    voiceHighlightInterval = 105;
     lastVoiceAnchor = null;
     elements.emptyState.hidden = !isEmpty;
     elements.scriptContent.hidden = isEmpty;
@@ -688,20 +733,21 @@
   function findSpokenAnchor(transcript) {
     const spoken = normalizeSpeechText(transcript).normalized;
     if (spoken.length < 2) return null;
-    const paragraphs = Array.from(elements.scriptContent.querySelectorAll('p'), (element) => ({
-      element,
-      ...normalizeSpeechText(element.textContent)
-    }));
     const candidates = [spoken];
-    for (let length = Math.min(10, spoken.length - 1); length >= 3; length -= 1) {
+    for (let length = Math.min(12, spoken.length - 1); length >= 1; length -= 1) {
       candidates.push(spoken.slice(-length));
     }
-    for (let paragraphIndex = Math.min(voiceParagraphIndex, Math.max(0, paragraphs.length - 1)); paragraphIndex < paragraphs.length; paragraphIndex += 1) {
-      const paragraph = paragraphs[paragraphIndex];
+    for (let paragraphIndex = Math.min(voiceParagraphIndex, Math.max(0, voiceParagraphs.length - 1)); paragraphIndex < voiceParagraphs.length; paragraphIndex += 1) {
+      const paragraph = voiceParagraphs[paragraphIndex];
       const minimumOffset = paragraphIndex === voiceParagraphIndex ? Math.max(0, voiceCharacterIndex - 2) : 0;
       for (const candidate of candidates) {
-        const normalizedOffset = paragraph.normalized.indexOf(candidate, minimumOffset);
-        if (normalizedOffset >= 0) return { ...paragraph, paragraphIndex, normalizedOffset, matchedLength: candidate.length };
+        let normalizedOffset = paragraph.normalized.indexOf(candidate, minimumOffset);
+        while (normalizedOffset >= 0) {
+          if (paragraphIndex !== voiceParagraphIndex || normalizedOffset + candidate.length > voiceCharacterIndex) {
+            return { ...paragraph, paragraphIndex, normalizedOffset, matchedLength: candidate.length };
+          }
+          normalizedOffset = paragraph.normalized.indexOf(candidate, normalizedOffset + 1);
+        }
       }
     }
     return null;
@@ -711,13 +757,16 @@
     elements.voiceFollowButton.classList.toggle('is-active', isVoiceFollowing);
     elements.voiceFollowButton.setAttribute('aria-pressed', String(isVoiceFollowing));
     elements.voiceFollowButton.setAttribute('aria-label', isVoiceFollowing ? '停止口播跟随' : '开始口播跟随');
-    elements.voiceFollowButton.title = isVoiceFollowing ? '停止口播跟随' : '口播跟随（需麦克风与语音识别支持）';
+    elements.voiceFollowButton.title = isVoiceFollowing ? '停止口播跟随' : '逐字口播跟随（需麦克风与语音识别支持）';
   }
 
   function stopVoiceFollow({ silent = false } = {}) {
     isVoiceFollowing = false;
     clearTimeout(voiceRestartTimer);
     voiceRestartTimer = null;
+    cancelAnimationFrame(voiceFollowFrame);
+    voiceFollowFrame = 0;
+    voiceLastFrame = 0;
     const recognizer = speechRecognizer;
     speechRecognizer = null;
     if (recognizer) {
@@ -739,30 +788,63 @@
   function applyVoiceAnchor(transcript) {
     const anchor = findSpokenAnchor(transcript);
     if (!anchor) return;
-    const textNode = anchor.element.firstChild;
-    const sourceOffset = anchor.offsets[anchor.normalizedOffset] ?? 0;
-    const range = document.createRange();
-    const boundedOffset = Math.min(sourceOffset, textNode?.textContent?.length || 0);
-    let anchorTop;
-    if (textNode) {
-      range.setStart(textNode, boundedOffset);
-      const nextCodePointLength = textNode.textContent.codePointAt(boundedOffset) > 0xFFFF ? 2 : 1;
-      range.setEnd(textNode, Math.min(textNode.textContent.length, boundedOffset + nextCodePointLength));
-      const rangeRect = range.getBoundingClientRect();
-      anchorTop = rangeRect.height ? rangeRect.top : anchor.element.getBoundingClientRect().top;
-    } else {
-      anchorTop = anchor.element.getBoundingClientRect().top;
-    }
-    const scrollRect = elements.scriptScroll.getBoundingClientRect();
-    const guideRect = $('.reading-guide').getBoundingClientRect();
-    const guideOffset = guideRect.top - scrollRect.top;
-    const maxScroll = Math.max(0, elements.scriptScroll.scrollHeight - elements.scriptScroll.clientHeight);
-    const targetScroll = Math.max(0, Math.min(maxScroll, elements.scriptScroll.scrollTop + anchorTop - scrollRect.top - guideOffset));
     const now = performance.now();
+    const matchedEnd = anchor.normalizedOffset + anchor.matchedLength;
+    const text = anchor.element.textContent || '';
+    const sourceStart = anchor.offsets[anchor.normalizedOffset] ?? 0;
+    const lastCharacterStart = anchor.offsets[matchedEnd - 1] ?? sourceStart;
+    const lastCharacterLength = text.codePointAt(lastCharacterStart) > 0xFFFF ? 2 : 1;
+    const anchorSpan = Array.from(anchor.element.querySelectorAll('.script-char')).find((span) => {
+      const start = Number(span.dataset.start), end = Number(span.dataset.end);
+      return start <= lastCharacterStart && end > lastCharacterStart;
+    });
+    const sourceEnd = matchedEnd >= anchor.normalized.length
+      ? text.length
+      : (anchorSpan ? Number(anchorSpan.dataset.end) : Math.min(text.length, lastCharacterStart + lastCharacterLength));
+    const anchorRect = anchorSpan?.getBoundingClientRect();
+    const anchorCenter = anchorRect?.height
+      ? anchorRect.top + anchorRect.height / 2
+      : anchor.element.getBoundingClientRect().top;
+
+    const paragraphElements = elements.scriptContent.querySelectorAll('p');
+    let advancedCharacters = 0;
+    for (let paragraphIndex = voiceParagraphIndex; paragraphIndex <= anchor.paragraphIndex; paragraphIndex += 1) {
+      const paragraph = paragraphElements[paragraphIndex];
+      if (!paragraph) continue;
+      const start = paragraphIndex === voiceParagraphIndex ? voiceCharacterIndex : 0;
+      const end = paragraphIndex < anchor.paragraphIndex ? (voiceParagraphs[paragraphIndex]?.normalized.length || 0) : matchedEnd;
+      advancedCharacters += Math.max(0, end - start);
+    }
+    const priorAnchor = lastVoiceAnchor;
+    for (let paragraphIndex = voiceHighlightedParagraphIndex; paragraphIndex <= anchor.paragraphIndex; paragraphIndex += 1) {
+      const paragraph = paragraphElements[paragraphIndex];
+      if (!paragraph) continue;
+      const previousEnd = paragraphIndex === voiceHighlightedParagraphIndex ? voiceHighlightedSourceEnd : 0;
+      const spokenEnd = paragraphIndex < anchor.paragraphIndex ? Number.POSITIVE_INFINITY : sourceEnd;
+      paragraph.querySelectorAll('.script-char').forEach((span) => {
+        const start = Number(span.dataset.start), end = Number(span.dataset.end);
+        if (end > previousEnd && end <= spokenEnd && !span.classList.contains('is-spoken') && !span.dataset.highlightQueued) {
+          span.dataset.highlightQueued = 'true';
+          voiceHighlightQueue.push(span);
+        }
+      });
+    }
+    if (priorAnchor && advancedCharacters > 0) {
+      const elapsedSeconds = (now - priorAnchor.time) / 1000;
+      if (elapsedSeconds >= 0.12 && elapsedSeconds <= 4) {
+        const estimatedInterval = elapsedSeconds * 1000 / advancedCharacters;
+        voiceHighlightInterval = Math.max(58, Math.min(260, voiceHighlightInterval * 0.55 + estimatedInterval * 0.45));
+      }
+    }
+    voiceHighlightedParagraphIndex = anchor.paragraphIndex;
+    voiceHighlightedSourceEnd = sourceEnd;
+    if (!voiceHighlightTimer) advanceSpokenHighlight();
+
+    const scrollTarget = getVoiceScrollTarget(anchorCenter);
 
     if (lastVoiceAnchor) {
       const elapsedSeconds = (now - lastVoiceAnchor.time) / 1000;
-      const distance = targetScroll - lastVoiceAnchor.scrollTop;
+      const distance = scrollTarget - lastVoiceAnchor.scrollTop;
       if (elapsedSeconds >= 0.35 && elapsedSeconds <= 12 && distance > 3) {
         const measuredSpeed = Math.max(1, Math.min(240, distance / elapsedSeconds));
         data.settings.speed = Math.round(Number(data.settings.speed) * 0.45 + measuredSpeed * 0.55);
@@ -774,13 +856,60 @@
         }
       }
     }
-    lastVoiceAnchor = { time: now, scrollTop: targetScroll };
+    lastVoiceAnchor = { time: now, scrollTop: scrollTarget };
     voiceParagraphIndex = anchor.paragraphIndex;
-    voiceCharacterIndex = anchor.normalizedOffset + anchor.matchedLength;
-    scrollPosition = targetScroll;
-    elements.scriptScroll.scrollTo({ top: targetScroll, behavior: 'smooth' });
+    voiceCharacterIndex = matchedEnd;
     elements.readyLabel.classList.add('is-playing');
     elements.readyLabel.lastElementChild.textContent = '正在口播跟随';
+  }
+
+  function getVoiceScrollTarget(anchorCenter) {
+    const scrollRect = elements.scriptScroll.getBoundingClientRect();
+    const guideRect = $('.reading-guide').getBoundingClientRect();
+    const guideOffset = guideRect.top - scrollRect.top;
+    const maxScroll = Math.max(0, elements.scriptScroll.scrollHeight - elements.scriptScroll.clientHeight);
+    return Math.max(0, Math.min(maxScroll, elements.scriptScroll.scrollTop + anchorCenter - scrollRect.top - guideOffset));
+  }
+
+  function advanceSpokenHighlight() {
+    if (!voiceHighlightQueue.length) return;
+    const character = voiceHighlightQueue.shift();
+    delete character.dataset.highlightQueued;
+    character.classList.add('is-spoken');
+    const rect = character.getBoundingClientRect();
+    if (rect.height && isVoiceFollowing) {
+      voiceTargetScroll = getVoiceScrollTarget(rect.top + rect.height / 2);
+      if (!voiceFollowFrame) {
+        voiceLastFrame = 0;
+        voiceFollowFrame = requestAnimationFrame(animateVoiceScroll);
+      }
+    }
+    if (voiceHighlightQueue.length) {
+      voiceHighlightTimer = setTimeout(() => {
+        voiceHighlightTimer = null;
+        advanceSpokenHighlight();
+      }, voiceHighlightInterval);
+    }
+  }
+
+  function animateVoiceScroll(timestamp) {
+    if (!isVoiceFollowing) { voiceFollowFrame = 0; return; }
+    const elapsed = voiceLastFrame ? Math.min(50, timestamp - voiceLastFrame) : 16;
+    voiceLastFrame = timestamp;
+    const current = elements.scriptScroll.scrollTop;
+    const difference = voiceTargetScroll - current;
+    const next = Math.abs(difference) < 0.65
+      ? voiceTargetScroll
+      : current + difference * (1 - Math.exp(-elapsed / 145));
+    elements.scriptScroll.scrollTop = next;
+    scrollPosition = next;
+    updateProgress();
+    if (Math.abs(voiceTargetScroll - next) < 0.65) {
+      voiceFollowFrame = 0;
+      voiceLastFrame = 0;
+      return;
+    }
+    voiceFollowFrame = requestAnimationFrame(animateVoiceScroll);
   }
 
   function startVoiceFollow() {
@@ -815,9 +944,7 @@
       };
       isVoiceFollowing = false;
       speechRecognizer = null;
-      updateVoiceFollowButton();
-      elements.readyLabel.classList.remove('is-playing');
-      elements.readyLabel.lastElementChild.textContent = '准备就绪';
+      stopVoiceFollow({ silent: true });
       showToast(messages[event.error] || '语音识别暂时不可用，请改用手动提词');
     };
     recognizer.onend = () => {
@@ -835,15 +962,14 @@
     };
     speechRecognizer = recognizer;
     isVoiceFollowing = true;
-    voiceParagraphIndex = 0;
-    voiceCharacterIndex = 0;
     lastVoiceAnchor = null;
+    voiceTargetScroll = elements.scriptScroll.scrollTop;
     updateVoiceFollowButton();
     elements.readyLabel.classList.add('is-playing');
     elements.readyLabel.lastElementChild.textContent = '正在听取口播';
     try {
       recognizer.start();
-      showToast('开始口播，文字会跟随识别到的稿件位置');
+      showToast('开始口播，已念文字会逐字变色并平滑跟随');
     } catch {
       stopVoiceFollow({ silent: true });
       showToast('无法启动语音识别，请重试或检查浏览器权限');
