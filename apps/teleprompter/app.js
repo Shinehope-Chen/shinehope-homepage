@@ -17,6 +17,7 @@
     countdownSelect: $('#countdownSelect'), countdownLayer: $('#countdownLayer'), countdownNumber: $('#countdownNumber'),
     progressSlider: $('#progressSlider'), progressValue: $('#progressValue'), emptyState: $('#emptyState'),
     editorDialog: $('#editorDialog'), editorForm: $('#editorForm'), editorTitle: $('#editorTitle'), titleInput: $('#scriptTitleInput'),
+    presentationExitButton: $('#presentationExitButton'),
     textInput: $('#scriptTextInput'), characterCount: $('#characterCount'), saveStatus: $('#saveStatus'), toast: $('#toast')
   };
 
@@ -45,6 +46,11 @@
       }
     } catch (error) { console.info('本地稿件读取失败，将使用空白示例。', error); }
     return structuredClone(initialData);
+  }
+
+  function syncAppViewportHeight() {
+    const height = window.visualViewport?.height || window.innerHeight;
+    document.documentElement.style.setProperty('--app-viewport-height', `${Math.round(height)}px`);
   }
 
   function saveData() {
@@ -254,6 +260,7 @@
     if (!isPresenting) {
       isPresenting = true;
       app.classList.add('is-presenting');
+      elements.presentationExitButton.hidden = false;
       if (!document.fullscreenElement && app.requestFullscreen) {
         try { await app.requestFullscreen(); } catch { showToast('浏览器未允许全屏，请按 F11'); }
       }
@@ -261,6 +268,7 @@
     } else {
       isPresenting = false;
       app.classList.remove('is-presenting');
+      elements.presentationExitButton.hidden = true;
       if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
       if (isPlaying || countdownTimer) stopPlayback();
     }
@@ -427,6 +435,7 @@
   $('#renameButton').addEventListener('click', () => openEditor());
   $('#startButton').addEventListener('click', startPlayback);
   $('#fullscreenButton').addEventListener('click', togglePresentation);
+  elements.presentationExitButton.addEventListener('click', togglePresentation);
   elements.speedUpButton.addEventListener('click', () => adjustSpeed(3));
   elements.speedDownButton.addEventListener('click', () => adjustSpeed(-3));
   $('#mobileLibraryButton').addEventListener('click', () => openMobileDrawer('library'));
@@ -504,6 +513,7 @@
     if (event.code === 'Escape' && isPresenting && !document.fullscreenElement) {
       isPresenting = false;
       app.classList.remove('is-presenting');
+      elements.presentationExitButton.hidden = true;
       stopPlayback();
     }
     if (event.code === 'Escape' && countdownTimer) pausePlayback();
@@ -517,10 +527,13 @@
     if (!document.fullscreenElement && isPresenting) {
       isPresenting = false;
       app.classList.remove('is-presenting');
+      elements.presentationExitButton.hidden = true;
       if (isPlaying || countdownTimer) stopPlayback();
     }
   });
-  window.addEventListener('resize', updateProgress);
+  syncAppViewportHeight();
+  window.addEventListener('resize', () => { syncAppViewportHeight(); updateProgress(); }, { passive: true });
+  window.visualViewport?.addEventListener('resize', () => { syncAppViewportHeight(); updateProgress(); }, { passive: true });
 
   renderScripts();
   renderScript();

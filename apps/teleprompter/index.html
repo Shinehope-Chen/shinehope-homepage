@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#17191c" />
     <meta name="description" content="念白是一款可在手机和电脑上使用的提词器，支持导入 Word、Markdown 和 TXT 文稿。" />
     <title>念白 · 在线提词器</title>
@@ -119,6 +119,9 @@
           <div class="dialog-footer"><span id="characterCount">0 字</span><div><button type="button" class="dialog-cancel" id="cancelEdit">取消</button><button type="submit" class="dialog-save" id="saveScriptButton">保存稿件</button></div></div>
         </form>
       </dialog>
+      <button id="presentationExitButton" class="presentation-exit" type="button" aria-label="退出专注显示" title="退出专注显示" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+      </button>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>
     <script src="./vendor/fflate-0.8.2.js"></script>
