@@ -13,6 +13,8 @@ Upload the contents of this folder to a public GitHub repository, then enable:
 
 The site entry point is `index.html`.
 
+The mobile-ready teleprompter is available at `apps/teleprompter/` and supports local TXT, Markdown (`.md`/`.markdown`), and Word (`.docx`) imports. Legacy `.doc` files are not supported. Scripts are stored in each browser's local storage on that device.
+
 ## Maintenance Note
 
 When adding a new feature or topic page, add both Simplified Chinese and English versions and connect them through the language switcher.

@@ -1064,6 +1064,29 @@ a {
   color: #ffe08a;
 }
 
+.teleprompter-app-card {
+  border-color: rgba(242, 140, 85, 0.28);
+  background:
+    radial-gradient(circle at 78% 22%, rgba(242, 140, 85, 0.28), transparent 30%),
+    linear-gradient(145deg, #25272b, #111316);
+}
+
+.teleprompter-app-card::before {
+  border-color: rgba(242, 140, 85, 0.3);
+}
+
+.teleprompter-app-card h3 {
+  color: #fff;
+}
+
+.teleprompter-app-card p {
+  color: rgba(245, 239, 234, 0.74);
+}
+
+.teleprompter-app-card > strong {
+  color: #ffad7f;
+}
+
 .life-list li {
   border: 1px solid var(--line);
   border-radius: 8px;

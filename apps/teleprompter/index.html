@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#17191c" />
+    <meta name="description" content="念白是一款可在手机和电脑上使用的提词器，支持导入 Word、Markdown 和 TXT 文稿。" />
+    <title>念白 · 在线提词器</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="app" id="app">
+      <header class="topbar">
+        <a class="brand" href="../../index.html" aria-label="返回个人主页">
+          <span class="brand-mark"></span><span>念白</span>
+        </a>
+        <span class="top-divider"></span>
+        <div class="active-title" id="activeTitleWrap">
+          <span id="activeTitle">宇宙与我们</span>
+          <button class="icon-button title-edit" id="renameButton" aria-label="重命名稿件" title="重命名稿件">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5 4 4M4 20l4.3-.8L19 8.5a2.12 2.12 0 0 0-3-3L5.3 16.2 4 20Z"/><path d="M12 20h8"/></svg>
+          </button>
+        </div>
+        <div class="top-actions">
+          <span class="autosave" id="saveStatus"><i></i>已自动保存</span>
+          <div class="mobile-drawer-actions">
+            <button class="icon-button" id="mobileLibraryButton" title="稿件列表" aria-label="稿件列表"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16"/><path d="M8 5v14"/></svg></button>
+            <button class="icon-button" id="mobileSettingsButton" title="提词设置" aria-label="提词设置"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10m4 0h2M4 17h2m4 0h10M14 5v4M8 15v4"/></svg></button>
+          </div>
+          <button class="icon-button export-button" id="exportButton" title="导出为 TXT" aria-label="导出为 TXT">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4"/><path d="M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg>
+          </button>
+          <button class="start-button" id="startButton">
+            <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
+            <span>开始提词</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <button id="drawerBackdrop" class="drawer-backdrop" aria-label="关闭侧栏" hidden></button>
+        <aside class="library" id="libraryPanel">
+          <div class="library-heading">
+            <div class="section-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2h6.5A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5v-11Z"/></svg>我的稿件</div>
+            <button id="importButton" class="quiet-button" title="导入 TXT、Markdown 或 Word 文稿">导入</button>
+            <input id="fileInput" type="file" accept=".txt,.md,.markdown,.docx,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
+          </div>
+          <nav class="script-list" id="scriptList" aria-label="稿件列表"></nav>
+          <div class="library-bottom">
+            <button class="new-script-button" id="newScriptButton">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              <span>新建稿件</span>
+            </button>
+            <p class="local-note">稿件只保存在这台设备上</p>
+          </div>
+        </aside>
+
+        <main class="stage-column">
+          <div class="stage-status">
+            <div class="ready-label" id="readyLabel"><span class="status-dot"></span><span>准备就绪</span></div>
+            <div class="stage-tools">
+              <button id="editButton" class="text-button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5 4 4M4 20l4.3-.8L19 8.5a2.12 2.12 0 0 0-3-3L5.3 16.2 4 20Z"/></svg>编辑稿件</button>
+              <button id="fullscreenButton" class="icon-button" title="全屏提词" aria-label="全屏提词"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/></svg></button>
+            </div>
+          </div>
+
+          <section class="reading-stage" aria-label="提词预览">
+            <div class="script-scroll" id="scriptScroll" tabindex="0">
+              <div class="script-content" id="scriptContent"></div>
+            </div>
+            <div class="reading-guide" aria-hidden="true"></div>
+            <div class="countdown-layer" id="countdownLayer" hidden><span id="countdownNumber">3</span></div>
+            <div class="empty-state" id="emptyState" hidden>
+              <div class="empty-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/></svg></div>
+              <p>把注意力留给表达</p>
+              <span>全屏后，文字会居中显示</span>
+            </div>
+          </section>
+
+          <div class="playback-bar">
+            <div class="shortcuts"><kbd>空格</kbd><span>播放 / 暂停</span><span class="shortcut-divider">·</span><button type="button" class="speed-key" id="speedUpButton" aria-label="增加滚动速度" title="增加 3 像素/秒">↑</button><button type="button" class="speed-key" id="speedDownButton" aria-label="降低滚动速度" title="降低 3 像素/秒">↓</button><span class="speed-adjust-label">调节速度</span></div>
+            <div class="progress-group"><span class="progress-value" id="progressValue">0%</span><input id="progressSlider" type="range" min="0" max="1000" value="0" aria-label="提词进度" /></div>
+          </div>
+        </main>
+
+        <aside class="settings" id="settingsPanel">
+          <div class="settings-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10m4 0h2M4 17h2m4 0h10M14 5v4M8 15v4"/></svg><span>提词设置</span></div>
+          <section class="setting-section font-setting">
+            <div class="setting-label">文字大小</div>
+            <div class="font-stepper">
+              <button class="step-button" id="fontDown" aria-label="减小字号">−</button>
+              <output id="fontSizeValue">48</output>
+              <button class="step-button" id="fontUp" aria-label="增大字号">＋</button>
+            </div>
+            <input class="visually-hidden" type="range" id="fontSizeRange" min="28" max="76" value="48" aria-label="文字大小" />
+          </section>
+          <section class="setting-section speed-setting">
+            <div class="setting-label">滚动速度</div>
+            <div class="speed-control"><input id="speedRange" type="range" min="5" max="80" value="32" aria-label="滚动速度，单位像素每秒" /><output class="speed-name" id="speedName">32 px/秒</output></div>
+          </section>
+          <section class="setting-section toggle-section">
+            <div class="toggle-row"><span>镜像翻转</span><button class="switch" id="mirrorToggle" role="switch" aria-checked="false" aria-label="镜像翻转"><i></i></button></div>
+          </section>
+          <section class="setting-section countdown-setting">
+            <div class="toggle-row"><span>倒计时</span><button class="switch is-on" id="countdownToggle" role="switch" aria-checked="true" aria-label="倒计时"><i></i></button></div>
+            <select id="countdownSelect" aria-label="倒计时秒数"><option value="3">3 秒</option><option value="5">5 秒</option><option value="10">10 秒</option></select>
+          </section>
+          <div class="settings-footer"><span class="keyboard-icon">⌘</span><span>按 <kbd>F</kbd> 切换全屏</span></div>
+        </aside>
+      </div>
+
+      <dialog id="editorDialog" class="editor-dialog">
+        <form method="dialog" class="editor-form" id="editorForm">
+          <div class="dialog-heading"><div><h2 id="editorTitle">编辑稿件</h2><p>停顿时换行，提词时会保留段落节奏。</p></div><button class="icon-button dialog-close" value="cancel" aria-label="关闭"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+          <label class="input-label" for="scriptTitleInput">稿件名称</label>
+          <input id="scriptTitleInput" class="title-input" maxlength="48" />
+          <label class="input-label" for="scriptTextInput">稿件内容</label>
+          <textarea id="scriptTextInput" rows="12" placeholder="把你的口播稿粘贴在这里……"></textarea>
+          <div class="dialog-footer"><span id="characterCount">0 字</span><div><button type="button" class="dialog-cancel" id="cancelEdit">取消</button><button type="submit" class="dialog-save" id="saveScriptButton">保存稿件</button></div></div>
+        </form>
+      </dialog>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+    <script src="./vendor/fflate-0.8.2.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
