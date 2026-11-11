@@ -51,6 +51,7 @@
   let voiceLastFrame = 0;
   let voiceTargetScroll = 0;
   let voiceParagraphs = [];
+  let voiceResultTranscripts = new Map();
   let voiceParagraphIndex = 0;
   let voiceCharacterIndex = 0;
   let voiceHighlightedParagraphIndex = 0;
@@ -734,16 +735,18 @@
     const spoken = normalizeSpeechText(transcript).normalized;
     if (spoken.length < 2) return null;
     const candidates = [spoken];
-    for (let length = Math.min(12, spoken.length - 1); length >= 1; length -= 1) {
+    for (let length = Math.min(12, spoken.length - 1); length >= 2; length -= 1) {
       candidates.push(spoken.slice(-length));
     }
     for (let paragraphIndex = Math.min(voiceParagraphIndex, Math.max(0, voiceParagraphs.length - 1)); paragraphIndex < voiceParagraphs.length; paragraphIndex += 1) {
       const paragraph = voiceParagraphs[paragraphIndex];
       const minimumOffset = paragraphIndex === voiceParagraphIndex ? Math.max(0, voiceCharacterIndex - 2) : 0;
+      const maximumStart = paragraphIndex === voiceParagraphIndex ? voiceCharacterIndex : 2;
       for (const candidate of candidates) {
         let normalizedOffset = paragraph.normalized.indexOf(candidate, minimumOffset);
         while (normalizedOffset >= 0) {
-          if (paragraphIndex !== voiceParagraphIndex || normalizedOffset + candidate.length > voiceCharacterIndex) {
+          if (normalizedOffset > maximumStart) break;
+          if (normalizedOffset + candidate.length > (paragraphIndex === voiceParagraphIndex ? voiceCharacterIndex : 0)) {
             return { ...paragraph, paragraphIndex, normalizedOffset, matchedLength: candidate.length };
           }
           normalizedOffset = paragraph.normalized.indexOf(candidate, normalizedOffset + 1);
@@ -931,7 +934,12 @@
     recognizer.onresult = (event) => {
       for (let index = event.resultIndex; index < event.results.length; index += 1) {
         const result = event.results[index];
-        if (result[0]?.transcript) applyVoiceAnchor(result[0].transcript);
+        const transcript = result[0]?.transcript;
+        if (!transcript) continue;
+        const normalizedTranscript = normalizeSpeechText(transcript).normalized;
+        if (voiceResultTranscripts.get(index) === normalizedTranscript) continue;
+        voiceResultTranscripts.set(index, normalizedTranscript);
+        applyVoiceAnchor(transcript);
       }
     };
     recognizer.onerror = (event) => {
@@ -949,6 +957,7 @@
     };
     recognizer.onend = () => {
       if (!isVoiceFollowing || speechRecognizer !== recognizer) return;
+      voiceResultTranscripts.clear();
       voiceRestartTimer = setTimeout(() => {
         if (!isVoiceFollowing || speechRecognizer !== recognizer) return;
         try { recognizer.start(); } catch {
@@ -963,6 +972,7 @@
     speechRecognizer = recognizer;
     isVoiceFollowing = true;
     lastVoiceAnchor = null;
+    voiceResultTranscripts.clear();
     voiceTargetScroll = elements.scriptScroll.scrollTop;
     updateVoiceFollowButton();
     elements.readyLabel.classList.add('is-playing');
