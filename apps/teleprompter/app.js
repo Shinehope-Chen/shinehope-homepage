@@ -56,9 +56,6 @@
   let voiceCharacterIndex = 0;
   let voiceHighlightedParagraphIndex = 0;
   let voiceHighlightedSourceEnd = 0;
-  let voiceHighlightQueue = [];
-  let voiceHighlightTimer = null;
-  let voiceHighlightInterval = 105;
   let lastVoiceAnchor = null;
   let lastVoiceSpeedSave = 0;
   let voiceSpeedDirty = false;
@@ -151,10 +148,7 @@
   function renderScript() {
     if (isVoiceFollowing) stopVoiceFollow({ silent: true });
     cancelAnimationFrame(voiceFollowFrame);
-    clearTimeout(voiceHighlightTimer);
     voiceFollowFrame = 0;
-    voiceHighlightTimer = null;
-    voiceHighlightQueue = [];
     const script = selectedScript();
     const isEmpty = !script || !script.text.trim();
     elements.activeTitle.textContent = script?.title || '未命名稿件';
@@ -175,7 +169,6 @@
     voiceCharacterIndex = 0;
     voiceHighlightedParagraphIndex = 0;
     voiceHighlightedSourceEnd = 0;
-    voiceHighlightInterval = 105;
     lastVoiceAnchor = null;
     elements.emptyState.hidden = !isEmpty;
     elements.scriptContent.hidden = isEmpty;
@@ -810,38 +803,18 @@
       : anchor.element.getBoundingClientRect().top;
 
     const paragraphElements = elements.scriptContent.querySelectorAll('p');
-    let advancedCharacters = 0;
-    for (let paragraphIndex = voiceParagraphIndex; paragraphIndex <= anchor.paragraphIndex; paragraphIndex += 1) {
-      const paragraph = paragraphElements[paragraphIndex];
-      if (!paragraph) continue;
-      const start = paragraphIndex === voiceParagraphIndex ? voiceCharacterIndex : 0;
-      const end = paragraphIndex < anchor.paragraphIndex ? (voiceParagraphs[paragraphIndex]?.normalized.length || 0) : matchedEnd;
-      advancedCharacters += Math.max(0, end - start);
-    }
-    const priorAnchor = lastVoiceAnchor;
     for (let paragraphIndex = voiceHighlightedParagraphIndex; paragraphIndex <= anchor.paragraphIndex; paragraphIndex += 1) {
       const paragraph = paragraphElements[paragraphIndex];
       if (!paragraph) continue;
       const previousEnd = paragraphIndex === voiceHighlightedParagraphIndex ? voiceHighlightedSourceEnd : 0;
       const spokenEnd = paragraphIndex < anchor.paragraphIndex ? Number.POSITIVE_INFINITY : sourceEnd;
       paragraph.querySelectorAll('.script-char').forEach((span) => {
-        const start = Number(span.dataset.start), end = Number(span.dataset.end);
-        if (end > previousEnd && end <= spokenEnd && !span.classList.contains('is-spoken') && !span.dataset.highlightQueued) {
-          span.dataset.highlightQueued = 'true';
-          voiceHighlightQueue.push(span);
-        }
+        const end = Number(span.dataset.end);
+        if (end > previousEnd && end <= spokenEnd) span.classList.add('is-spoken');
       });
-    }
-    if (priorAnchor && advancedCharacters > 0) {
-      const elapsedSeconds = (now - priorAnchor.time) / 1000;
-      if (elapsedSeconds >= 0.12 && elapsedSeconds <= 4) {
-        const estimatedInterval = elapsedSeconds * 1000 / advancedCharacters;
-        voiceHighlightInterval = Math.max(58, Math.min(260, voiceHighlightInterval * 0.55 + estimatedInterval * 0.45));
-      }
     }
     voiceHighlightedParagraphIndex = anchor.paragraphIndex;
     voiceHighlightedSourceEnd = sourceEnd;
-    if (!voiceHighlightTimer) advanceSpokenHighlight();
 
     const scrollTarget = getVoiceScrollTarget(anchorCenter);
 
@@ -862,6 +835,11 @@
     lastVoiceAnchor = { time: now, scrollTop: scrollTarget };
     voiceParagraphIndex = anchor.paragraphIndex;
     voiceCharacterIndex = matchedEnd;
+    voiceTargetScroll = scrollTarget;
+    if (!voiceFollowFrame) {
+      voiceLastFrame = 0;
+      voiceFollowFrame = requestAnimationFrame(animateVoiceScroll);
+    }
     elements.readyLabel.classList.add('is-playing');
     elements.readyLabel.lastElementChild.textContent = '正在口播跟随';
   }
@@ -872,27 +850,6 @@
     const guideOffset = guideRect.top - scrollRect.top;
     const maxScroll = Math.max(0, elements.scriptScroll.scrollHeight - elements.scriptScroll.clientHeight);
     return Math.max(0, Math.min(maxScroll, elements.scriptScroll.scrollTop + anchorCenter - scrollRect.top - guideOffset));
-  }
-
-  function advanceSpokenHighlight() {
-    if (!voiceHighlightQueue.length) return;
-    const character = voiceHighlightQueue.shift();
-    delete character.dataset.highlightQueued;
-    character.classList.add('is-spoken');
-    const rect = character.getBoundingClientRect();
-    if (rect.height && isVoiceFollowing) {
-      voiceTargetScroll = getVoiceScrollTarget(rect.top + rect.height / 2);
-      if (!voiceFollowFrame) {
-        voiceLastFrame = 0;
-        voiceFollowFrame = requestAnimationFrame(animateVoiceScroll);
-      }
-    }
-    if (voiceHighlightQueue.length) {
-      voiceHighlightTimer = setTimeout(() => {
-        voiceHighlightTimer = null;
-        advanceSpokenHighlight();
-      }, voiceHighlightInterval);
-    }
   }
 
   function animateVoiceScroll(timestamp) {
@@ -937,9 +894,14 @@
         const transcript = result[0]?.transcript;
         if (!transcript) continue;
         const normalizedTranscript = normalizeSpeechText(transcript).normalized;
-        if (voiceResultTranscripts.get(index) === normalizedTranscript) continue;
+        const previousTranscript = voiceResultTranscripts.get(index) || '';
+        if (previousTranscript === normalizedTranscript) continue;
+        let commonPrefixLength = 0;
+        while (commonPrefixLength < previousTranscript.length && commonPrefixLength < normalizedTranscript.length
+          && previousTranscript[commonPrefixLength] === normalizedTranscript[commonPrefixLength]) commonPrefixLength += 1;
         voiceResultTranscripts.set(index, normalizedTranscript);
-        applyVoiceAnchor(transcript);
+        const progressTranscript = normalizedTranscript.slice(Math.max(0, commonPrefixLength - 2));
+        if (progressTranscript.length >= 2) applyVoiceAnchor(progressTranscript);
       }
     };
     recognizer.onerror = (event) => {
@@ -979,7 +941,7 @@
     elements.readyLabel.lastElementChild.textContent = '正在听取口播';
     try {
       recognizer.start();
-      showToast('开始口播，已念文字会逐字变色并平滑跟随');
+      showToast('只跟随识别到的稿件文字；停顿时会停在当前字');
     } catch {
       stopVoiceFollow({ silent: true });
       showToast('无法启动语音识别，请重试或检查浏览器权限');
