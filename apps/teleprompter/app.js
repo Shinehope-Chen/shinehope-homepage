@@ -52,6 +52,7 @@
   let voiceTargetScroll = 0;
   let voiceParagraphs = [];
   let voiceResultTranscripts = new Map();
+  let voiceBiasIndex = -1;
   let voiceParagraphIndex = 0;
   let voiceCharacterIndex = 0;
   let voiceHighlightedParagraphIndex = 0;
@@ -167,6 +168,7 @@
     }));
     voiceParagraphIndex = 0;
     voiceCharacterIndex = 0;
+    voiceBiasIndex = -1;
     voiceHighlightedParagraphIndex = 0;
     voiceHighlightedSourceEnd = 0;
     lastVoiceAnchor = null;
@@ -726,12 +728,14 @@
 
   function findSpokenAnchor(transcript) {
     const spoken = normalizeSpeechText(transcript).normalized;
-    if (spoken.length < 2) return null;
+    if (spoken.length < 2 || !voiceParagraphs.length) return null;
     const candidates = [spoken];
     for (let length = Math.min(12, spoken.length - 1); length >= 2; length -= 1) {
       candidates.push(spoken.slice(-length));
     }
     for (let paragraphIndex = Math.min(voiceParagraphIndex, Math.max(0, voiceParagraphs.length - 1)); paragraphIndex < voiceParagraphs.length; paragraphIndex += 1) {
+      if (paragraphIndex > voiceParagraphIndex
+        && voiceParagraphs[voiceParagraphIndex].normalized.length - voiceCharacterIndex > 2) break;
       const paragraph = voiceParagraphs[paragraphIndex];
       const minimumOffset = paragraphIndex === voiceParagraphIndex ? Math.max(0, voiceCharacterIndex - 2) : 0;
       const maximumStart = paragraphIndex === voiceParagraphIndex ? voiceCharacterIndex : 2;
@@ -740,13 +744,99 @@
         while (normalizedOffset >= 0) {
           if (normalizedOffset > maximumStart) break;
           if (normalizedOffset + candidate.length > (paragraphIndex === voiceParagraphIndex ? voiceCharacterIndex : 0)) {
-            return { ...paragraph, paragraphIndex, normalizedOffset, matchedLength: candidate.length };
+            return { ...paragraph, paragraphIndex, normalizedOffset, matchedLength: candidate.length, fuzzy: false };
           }
           normalizedOffset = paragraph.normalized.indexOf(candidate, normalizedOffset + 1);
         }
       }
     }
-    return null;
+    return findFuzzySpokenAnchor(spoken);
+  }
+
+  function levenshteinDistance(left, right, maximumDistance) {
+    if (Math.abs(left.length - right.length) > maximumDistance) return maximumDistance + 1;
+    let previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+    for (let leftIndex = 1; leftIndex <= left.length; leftIndex += 1) {
+      const current = [leftIndex];
+      let rowMinimum = leftIndex;
+      for (let rightIndex = 1; rightIndex <= right.length; rightIndex += 1) {
+        const cost = left[leftIndex - 1] === right[rightIndex - 1] ? 0 : 1;
+        current[rightIndex] = Math.min(
+          previous[rightIndex] + 1,
+          current[rightIndex - 1] + 1,
+          previous[rightIndex - 1] + cost
+        );
+        rowMinimum = Math.min(rowMinimum, current[rightIndex]);
+      }
+      if (rowMinimum > maximumDistance) return maximumDistance + 1;
+      previous = current;
+    }
+    return previous[right.length];
+  }
+
+  function findFuzzySpokenAnchor(spoken) {
+    if (spoken.length < 5 || !voiceParagraphs.length) return null;
+    const startParagraph = Math.min(voiceParagraphIndex, Math.max(0, voiceParagraphs.length - 1));
+    let best = null;
+
+    for (let paragraphIndex = startParagraph; paragraphIndex < voiceParagraphs.length; paragraphIndex += 1) {
+      if (paragraphIndex > voiceParagraphIndex
+        && voiceParagraphs[voiceParagraphIndex].normalized.length - voiceCharacterIndex > 2) break;
+      const paragraph = voiceParagraphs[paragraphIndex];
+      const cursor = paragraphIndex === voiceParagraphIndex ? voiceCharacterIndex : 0;
+      const minimumStart = paragraphIndex === voiceParagraphIndex ? Math.max(0, cursor - 1) : 0;
+      const maximumStart = paragraphIndex === voiceParagraphIndex ? cursor : 1;
+      const maximumLength = Math.min(20, spoken.length + 2);
+
+      for (let start = minimumStart; start <= maximumStart; start += 1) {
+        for (let length = 5; length <= maximumLength && start + length <= paragraph.normalized.length; length += 1) {
+          if (start + length <= cursor || start + length > cursor + 20) continue;
+          const target = paragraph.normalized.slice(start, start + length);
+          const maximumDistance = length >= 9 ? 2 : 1;
+          const minimumSpeechLength = Math.max(4, length - maximumDistance);
+          const maximumSpeechLength = Math.min(spoken.length, length + maximumDistance);
+
+          for (let speechLength = minimumSpeechLength; speechLength <= maximumSpeechLength; speechLength += 1) {
+            const candidate = spoken.slice(-speechLength);
+            const distance = levenshteinDistance(target, candidate, maximumDistance);
+            if (distance > maximumDistance || distance / Math.max(target.length, candidate.length) > 0.22) continue;
+            const score = distance / Math.max(target.length, candidate.length);
+            if (!best || score < best.score || (score === best.score && length > best.matchedLength)) {
+              best = { ...paragraph, paragraphIndex, normalizedOffset: start, matchedLength: length, score };
+            }
+          }
+        }
+      }
+    }
+    if (!best) return null;
+    const { score, ...anchor } = best;
+    return { ...anchor, fuzzy: true };
+  }
+
+  function updateSpeechContext(recognizer, force = false) {
+    const Phrase = window.SpeechRecognitionPhrase;
+    if (!recognizer || typeof Phrase !== 'function' || !('phrases' in recognizer)) return;
+    if (!force && Math.abs(voiceCharacterIndex - voiceBiasIndex) < 6) return;
+
+    const phrases = [];
+    const currentParagraph = voiceParagraphs[voiceParagraphIndex];
+    const upcoming = currentParagraph?.normalized.slice(voiceCharacterIndex, voiceCharacterIndex + 32) || '';
+    for (let start = 0; start < upcoming.length; start += 6) {
+      const phrase = upcoming.slice(start, start + 12);
+      if (phrase.length >= 4) phrases.push(phrase);
+    }
+    if (upcoming.length >= 4) phrases.push(upcoming);
+    if (upcoming.length < 16) {
+      const nextParagraph = voiceParagraphs[voiceParagraphIndex + 1]?.normalized.slice(0, 16);
+      if (nextParagraph?.length >= 4) phrases.push(nextParagraph);
+    }
+
+    try {
+      recognizer.phrases = [...new Set(phrases)].map((phrase) => new Phrase(phrase, 3));
+      voiceBiasIndex = voiceCharacterIndex;
+    } catch {
+      // Contextual phrase biasing is optional and unsupported in some browsers.
+    }
   }
 
   function updateVoiceFollowButton() {
@@ -781,8 +871,8 @@
     if (!silent) showToast('口播跟随已停止');
   }
 
-  function applyVoiceAnchor(transcript) {
-    const anchor = findSpokenAnchor(transcript);
+  function applyVoiceAnchor(transcript, knownAnchor = null) {
+    const anchor = knownAnchor || findSpokenAnchor(transcript);
     if (!anchor) return;
     const now = performance.now();
     const matchedEnd = anchor.normalizedOffset + anchor.matchedLength;
@@ -818,7 +908,7 @@
 
     const scrollTarget = getVoiceScrollTarget(anchorCenter);
 
-    if (lastVoiceAnchor) {
+    if (lastVoiceAnchor && !anchor.fuzzy && !lastVoiceAnchor.fuzzy) {
       const elapsedSeconds = (now - lastVoiceAnchor.time) / 1000;
       const distance = scrollTarget - lastVoiceAnchor.scrollTop;
       if (elapsedSeconds >= 0.35 && elapsedSeconds <= 12 && distance > 3) {
@@ -832,9 +922,10 @@
         }
       }
     }
-    lastVoiceAnchor = { time: now, scrollTop: scrollTarget };
+    lastVoiceAnchor = { time: now, scrollTop: scrollTarget, fuzzy: anchor.fuzzy };
     voiceParagraphIndex = anchor.paragraphIndex;
     voiceCharacterIndex = matchedEnd;
+    updateSpeechContext(speechRecognizer);
     voiceTargetScroll = scrollTarget;
     if (!voiceFollowFrame) {
       voiceLastFrame = 0;
@@ -887,21 +978,39 @@
     recognizer.lang = 'zh-CN';
     recognizer.continuous = true;
     recognizer.interimResults = true;
-    recognizer.maxAlternatives = 1;
+    recognizer.maxAlternatives = 3;
+    voiceBiasIndex = -1;
+    updateSpeechContext(recognizer, true);
     recognizer.onresult = (event) => {
       for (let index = event.resultIndex; index < event.results.length; index += 1) {
         const result = event.results[index];
-        const transcript = result[0]?.transcript;
-        if (!transcript) continue;
-        const normalizedTranscript = normalizeSpeechText(transcript).normalized;
-        const previousTranscript = voiceResultTranscripts.get(index) || '';
-        if (previousTranscript === normalizedTranscript) continue;
-        let commonPrefixLength = 0;
-        while (commonPrefixLength < previousTranscript.length && commonPrefixLength < normalizedTranscript.length
-          && previousTranscript[commonPrefixLength] === normalizedTranscript[commonPrefixLength]) commonPrefixLength += 1;
-        voiceResultTranscripts.set(index, normalizedTranscript);
-        const progressTranscript = normalizedTranscript.slice(Math.max(0, commonPrefixLength - 2));
-        if (progressTranscript.length >= 2) applyVoiceAnchor(progressTranscript);
+        let bestMatch = null;
+        for (let alternativeIndex = 0; alternativeIndex < result.length; alternativeIndex += 1) {
+          const alternative = result[alternativeIndex];
+          const normalizedTranscript = normalizeSpeechText(alternative?.transcript).normalized;
+          if (!normalizedTranscript) continue;
+          const transcriptKey = `${index}:${alternativeIndex}`;
+          const previousTranscript = voiceResultTranscripts.get(transcriptKey) || '';
+          if (previousTranscript === normalizedTranscript) continue;
+          let commonPrefixLength = 0;
+          while (commonPrefixLength < previousTranscript.length && commonPrefixLength < normalizedTranscript.length
+            && previousTranscript[commonPrefixLength] === normalizedTranscript[commonPrefixLength]) commonPrefixLength += 1;
+          voiceResultTranscripts.set(transcriptKey, normalizedTranscript);
+          const progressTranscript = normalizedTranscript.slice(Math.max(0, commonPrefixLength - 2));
+          if (progressTranscript.length < 2) continue;
+          const anchor = findSpokenAnchor(progressTranscript);
+          if (!anchor) continue;
+          const candidate = {
+            transcript: progressTranscript,
+            anchor,
+            confidence: Number(alternative.confidence) || 0
+          };
+          if (!bestMatch || (bestMatch.anchor.fuzzy && !anchor.fuzzy)
+            || (bestMatch.anchor.fuzzy === anchor.fuzzy && candidate.confidence > bestMatch.confidence)
+            || (bestMatch.anchor.fuzzy === anchor.fuzzy && candidate.confidence === bestMatch.confidence
+              && anchor.matchedLength > bestMatch.anchor.matchedLength)) bestMatch = candidate;
+        }
+        if (bestMatch) applyVoiceAnchor(bestMatch.transcript, bestMatch.anchor);
       }
     };
     recognizer.onerror = (event) => {
@@ -941,7 +1050,7 @@
     elements.readyLabel.lastElementChild.textContent = '正在听取口播';
     try {
       recognizer.start();
-      showToast('只跟随识别到的稿件文字；停顿时会停在当前字');
+      showToast('轻微错字可容错；手机靠近说话人或连接耳机麦克风，识别会更稳');
     } catch {
       stopVoiceFollow({ silent: true });
       showToast('无法启动语音识别，请重试或检查浏览器权限');
